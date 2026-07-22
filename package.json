@@ -1,0 +1,8 @@
+{
+  "name": "medicina-vitoria",
+  "private": true,
+  "description": "Backend de anexos (Google Drive) do Portal de Estudos da Vitória. O frontend é estático.",
+  "dependencies": {
+    "googleapis": "^144.0.0"
+  }
+}
