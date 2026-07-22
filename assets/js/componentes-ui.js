@@ -101,8 +101,8 @@
       el('tr', {}, colunas.map(function (c) { return el('th', { text: c }); })),
     ]);
     var tbody = el('tbody', {}, linhas.map(function (row) {
-      return el('tr', {}, row.map(function (cel) {
-        return el('td', {}, [typeof cel === 'string' ? document.createTextNode(cel) : cel]);
+      return el('tr', {}, row.map(function (cel, i) {
+        return el('td', { 'data-label': colunas[i] || '' }, [typeof cel === 'string' ? document.createTextNode(cel) : cel]);
       }));
     }));
     return el('div', { class: 'tabela-wrap' }, [el('table', { class: 'tabela' }, [thead, tbody])]);

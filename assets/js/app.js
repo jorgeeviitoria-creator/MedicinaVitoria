@@ -478,6 +478,8 @@
 
     document.title = item.titulo + ' — Portal de Estudos';
     frame.src = item.arquivo;
+    var tituloEl = $('#ver-titulo');
+    if (tituloEl) tituloEl.textContent = item.titulo;
     // "Voltar" leva pra página da matéria (destino determinístico, funciona até se
     // o material foi aberto direto pelo link, sem histórico).
     voltar.setAttribute('href',
