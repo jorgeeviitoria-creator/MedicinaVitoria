@@ -185,6 +185,27 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+/* ---------- Anexos (Anotações / Trabalhos) ---------- */
+.anexo-toolbar { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-4); flex-wrap: wrap; }
+.anexo-progress { flex: 1 1 160px; height: 8px; background: var(--cor-primaria-clara); border-radius: var(--raio-badge); overflow: hidden; min-width: 120px; }
+.anexo-progress__bar { height: 100%; width: 0; background: var(--cor-primaria); transition: width .1s ease; }
+.anexo-lista { display: flex; flex-direction: column; gap: 10px; }
+.anexo-card { display: flex; align-items: center; gap: var(--sp-3); padding: 12px 14px; background: var(--cor-superficie); border: 1px solid var(--cor-borda); border-radius: var(--raio-card); }
+.anexo-card__icone { font-size: 1.6rem; line-height: 1; flex: 0 0 auto; }
+.anexo-card__info { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
+.anexo-card__info strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.anexo-acoes { display: flex; gap: 6px; flex: 0 0 auto; }
+
+.anexo-modal { position: fixed; inset: 0; z-index: 1200; display: flex; flex-direction: column; background: rgba(46, 31, 71, .6); }
+.anexo-modal__bar { height: 52px; flex: 0 0 auto; display: flex; align-items: center; gap: var(--sp-3); padding: 0 12px; background: var(--cor-primaria); color: #fff; }
+.anexo-modal__frame { flex: 1 1 auto; width: 100%; border: 0; background: #000; }
+
+@media (max-width: 640px) {
+  .anexo-card { flex-wrap: wrap; }
+  .anexo-acoes { width: 100%; }
+  .anexo-acoes .btn { flex: 1; justify-content: center; }
+}
+
 /* ---------- Utilidades ---------- */
 .sr-only {
   position: absolute; width: 1px; height: 1px;

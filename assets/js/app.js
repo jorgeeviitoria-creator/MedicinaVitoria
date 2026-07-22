@@ -220,6 +220,26 @@
         $all('.aba-painel', paineis).forEach(function (pn) { pn.hidden = pn.getAttribute('data-per') !== per; });
       });
     });
+
+    // Abas extras: Anotações e Trabalhos (anexos no Google Drive). Carregam sob demanda.
+    [
+      { tipo: 'anotacoes', rotulo: '📝 Anotações' },
+      { tipo: 'trabalhos', rotulo: '📎 Trabalhos' },
+    ].forEach(function (ax) {
+      var btn = UI.el('button', { class: 'aba', type: 'button', 'data-per': ax.tipo }, [ax.rotulo]);
+      var painel = UI.el('div', { class: 'aba-painel', 'data-per': ax.tipo });
+      painel.hidden = true;
+      var carregado = false;
+      abas.appendChild(btn);
+      paineis.appendChild(painel);
+      btn.addEventListener('click', function () {
+        $all('.aba', abas).forEach(function (a) { a.classList.remove('ativo'); });
+        btn.classList.add('ativo');
+        $all('.aba-painel', paineis).forEach(function (pn) { pn.hidden = pn.getAttribute('data-per') !== ax.tipo; });
+        if (!global.Anexos) { painel.innerHTML = '<p class="card__meta">Anexos só funcionam no site publicado.</p>'; return; }
+        if (!carregado) { carregado = true; global.Anexos.renderPainel(painel, sem, mat, ax.tipo, ax.rotulo); }
+      });
+    });
   }
 
   /* ---------- Página: Calculadora ---------- */
