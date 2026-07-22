@@ -5,17 +5,17 @@ const crypto = require('crypto');
 
 function driveClient() {
   const auth = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_ID || process.env.ID_DO_CLIENTE_DO_GOOGLE,
     process.env.GOOGLE_CLIENT_SECRET
   );
   auth.setCredentials({ refresh_token: process.env.GOOGLE_REFRESH_TOKEN });
   return { drive: google.drive({ version: 'v3', auth }), auth };
 }
 
-function pastaRaiz() { return process.env.GOOGLE_DRIVE_FOLDER_ID; }
+function pastaRaiz() { return process.env.GOOGLE_DRIVE_FOLDER_ID || process.env.ID_DA_PASTA_DO_GOOGLE_DRIVE; }
 
 function autorizado(req) {
-  const esperada = process.env.UPLOAD_PASSWORD || '';
+  const esperada = process.env.UPLOAD_PASSWORD || process.env.SENHA_DE_UPLOAD || '';
   if (!esperada) return false;
   const enviada = String(req.headers['x-portal-senha'] || '');
   const a = Buffer.from(enviada);
