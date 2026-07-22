@@ -1,0 +1,12 @@
+# Segredos — este projeto (o site) nunca deve conter token/credencial.
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+
+# Sistema operacional
+Thumbs.db
+Desktop.ini
+.DS_Store

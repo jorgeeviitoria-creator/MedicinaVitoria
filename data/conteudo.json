@@ -1,0 +1,61 @@
+{
+  "geradoEm": "2026-07-22T13:04:38.466Z",
+  "semestres": [
+    {
+      "slug": "4-semestre",
+      "label": "4º Semestre"
+    }
+  ],
+  "materias": [
+    {
+      "slug": "biofisica",
+      "label": "Biofísica",
+      "semestre": "4-semestre"
+    },
+    {
+      "slug": "imunologia",
+      "label": "Imunologia",
+      "semestre": "4-semestre"
+    },
+    {
+      "slug": "microbiologia-2",
+      "label": "Microbiologia II",
+      "semestre": "4-semestre"
+    }
+  ],
+  "itens": [
+    {
+      "id": "4-semestre_biofisica_P2_paineis_biofisica-cardiaca",
+      "semestre": "4-semestre",
+      "materia": "biofisica",
+      "periodo": "P2",
+      "tipo": "painel",
+      "formato": "html",
+      "titulo": "BIOFÍSICA CARDÍACA — P2",
+      "arquivo": "materias/4-semestre/biofisica/p2/paineis/biofisica-cardiaca.html",
+      "dataModificacao": "2026-07-22"
+    },
+    {
+      "id": "4-semestre_imunologia_P2_paineis_imunologia-master",
+      "semestre": "4-semestre",
+      "materia": "imunologia",
+      "periodo": "P2",
+      "tipo": "painel",
+      "formato": "html",
+      "titulo": "IMUNOLOGIA — MASTER",
+      "arquivo": "materias/4-semestre/imunologia/p2/paineis/imunologia-master.html",
+      "dataModificacao": "2026-07-22"
+    },
+    {
+      "id": "4-semestre_microbiologia-2_P2_paineis_microbiologia-teorica",
+      "semestre": "4-semestre",
+      "materia": "microbiologia-2",
+      "periodo": "P2",
+      "tipo": "painel",
+      "formato": "html",
+      "titulo": "MICROBIOLOGIA I — TEÓRICA (P2)",
+      "arquivo": "materias/4-semestre/microbiologia-2/p2/paineis/microbiologia-teorica.html",
+      "dataModificacao": "2026-07-22"
+    }
+  ]
+}

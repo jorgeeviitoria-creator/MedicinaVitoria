@@ -1,0 +1,17 @@
+{
+  "4-semestre": {
+    "label": "4º Semestre",
+    "materias": {
+      "fisiologia-2": { "label": "Fisiologia II", "pesos": { "P1": 30, "P2": 30, "P3": 40 }, "mediaMinima": 6.0 },
+      "microbiologia-2": { "label": "Microbiologia II", "pesos": { "P1": 30, "P2": 30, "P3": 40 }, "mediaMinima": 6.0 },
+      "biofisica": { "label": "Biofísica", "pesos": { "P1": 30, "P2": 30, "P3": 40 }, "mediaMinima": 6.0 },
+      "imunologia": { "label": "Imunologia", "pesos": { "P1": 30, "P2": 30, "P3": 40 }, "mediaMinima": 6.0 },
+      "bioquimica-2": { "label": "Bioquímica II", "pesos": { "P1": 30, "P2": 30, "P3": 40 }, "mediaMinima": 6.0 },
+      "bioetica": { "label": "Bioética", "pesos": { "P1": 30, "P2": 30, "P3": 40 }, "mediaMinima": 6.0 },
+      "nutricao": { "label": "Nutrição", "pesos": { "P1": 30, "P2": 30, "P3": 40 }, "mediaMinima": 6.0 },
+      "epidemiologia-saude-publica": { "label": "Epidemiologia e Saúde Pública", "pesos": { "P1": 30, "P2": 30, "P3": 40 }, "mediaMinima": 6.0 },
+      "optativa-2": { "label": "Optativa II", "pesos": { "P1": 30, "P2": 30, "P3": 40 }, "mediaMinima": 6.0 },
+      "seminario-integracao": { "label": "Seminário de Integração de Matérias", "pesos": { "P1": 100, "P2": 0, "P3": 0 }, "mediaMinima": 6.0 }
+    }
+  }
+}

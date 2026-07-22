@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Estudos da Vitória</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/variaveis.css">
+  <link rel="stylesheet" href="assets/css/componentes.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+</head>
+<body data-pagina="dashboard">
+  <header class="header">
+    <div class="header__interno">
+      <a class="header__marca" href="index.html"><span class="logo" aria-hidden="true">V</span> Portal da Vitória</a>
+      <div class="header__busca">
+        <label class="sr-only" for="busca-global">Buscar material em todas as matérias</label>
+        <input id="busca-global" class="input" type="search" placeholder="Buscar material…" autocomplete="off" aria-label="Buscar material">
+        <div id="busca-dropdown" class="busca-dropdown" role="listbox" hidden></div>
+      </div>
+      <nav class="header__nav" aria-label="Navegação principal">
+        <a href="index.html" data-pagina="dashboard">Início</a>
+        <a href="calculadora.html" data-pagina="calculadora">Calculadora</a>
+        <a href="historico.html" data-pagina="historico">Histórico</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="barra-topo">
+      <div>
+        <h1 class="pagina-titulo">Minhas matérias</h1>
+        <p class="pagina-sub">Resumos, simulados, perguntas e painéis, organizados por período.</p>
+      </div>
+      <div class="campo" style="margin:0;min-width:220px;">
+        <label class="campo__label" for="seletor-semestre">Semestre</label>
+        <select id="seletor-semestre" class="select" aria-label="Selecionar semestre"></select>
+      </div>
+    </div>
+
+    <div id="grid-materias" class="grid-cards" aria-live="polite"></div>
+  </main>
+
+  <script src="data/conteudo.js"></script>
+  <script src="assets/js/componentes-ui.js"></script>
+  <script src="assets/js/calculadora.js"></script>
+  <script src="assets/js/manifesto.js"></script>
+  <script src="assets/js/notas.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

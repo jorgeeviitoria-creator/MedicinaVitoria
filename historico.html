@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico de notas — Portal de Estudos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/variaveis.css">
+  <link rel="stylesheet" href="assets/css/componentes.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+</head>
+<body data-pagina="historico">
+  <header class="header">
+    <div class="header__interno">
+      <a class="header__marca" href="index.html"><span class="logo" aria-hidden="true">V</span> Portal da Vitória</a>
+      <div class="header__busca">
+        <label class="sr-only" for="busca-global">Buscar material em todas as matérias</label>
+        <input id="busca-global" class="input" type="search" placeholder="Buscar material…" autocomplete="off" aria-label="Buscar material">
+        <div id="busca-dropdown" class="busca-dropdown" role="listbox" hidden></div>
+      </div>
+      <nav class="header__nav" aria-label="Navegação principal">
+        <a href="index.html" data-pagina="dashboard">Início</a>
+        <a href="calculadora.html" data-pagina="calculadora">Calculadora</a>
+        <a href="historico.html" data-pagina="historico">Histórico</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="barra-topo">
+      <div>
+        <h1 class="pagina-titulo">Histórico de notas</h1>
+        <p class="pagina-sub">Todos os lançamentos, com edição, exclusão e backup.</p>
+      </div>
+      <div class="barra-topo__acoes">
+        <button id="btn-exportar" class="btn btn--secundario" type="button">Exportar backup</button>
+        <button id="btn-importar" class="btn btn--secundario" type="button">Importar backup</button>
+        <input id="input-importar" type="file" accept="application/json,.json" hidden>
+      </div>
+    </div>
+
+    <div class="filtros">
+      <div class="campo">
+        <label class="campo__label" for="hist-semestre">Semestre</label>
+        <select id="hist-semestre" class="select"></select>
+      </div>
+      <div class="campo">
+        <label class="campo__label" for="hist-materia">Matéria</label>
+        <select id="hist-materia" class="select"></select>
+      </div>
+      <div class="campo">
+        <label class="campo__label" for="hist-periodo">Período</label>
+        <select id="hist-periodo" class="select">
+          <option value="">Todos</option>
+          <option value="P1">P1</option>
+          <option value="P2">P2</option>
+          <option value="P3">P3</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="hist-tabela" aria-live="polite"></div>
+  </main>
+
+  <script src="data/conteudo.js"></script>
+  <script src="assets/js/componentes-ui.js"></script>
+  <script src="assets/js/calculadora.js"></script>
+  <script src="assets/js/manifesto.js"></script>
+  <script src="assets/js/notas.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+/* variaveis.css — cores, tipografia, espaçamento (custom properties).
+   Modo escuro futuro: basta sobrescrever estas variáveis em [data-tema="escuro"]. */
+:root {
+  /* Marca */
+  --cor-primaria: #6D28D9;
+  --cor-primaria-hover: #5B21B6;
+  --cor-primaria-clara: #EDE9FE;
+  --cor-acento: #A21CAF;
+
+  /* Status */
+  --cor-sucesso: #0D9488;
+  --cor-alerta: #D97706;
+  --cor-erro: #DC2626;
+
+  /* Neutros */
+  --cor-fundo: #FAF5FF;
+  --cor-superficie: #FFFFFF;
+  --cor-texto: #2E1F47;
+  --cor-texto-secundario: #6B7280;
+  --cor-borda: #E4DCF5;
+
+  /* Tipografia */
+  --fonte-base: 'Inter', 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --fs-titulo-pagina: 1.75rem;
+  --fs-titulo-secao: 1.25rem;
+  --fs-corpo: 1rem;
+  --fs-legenda: 0.875rem;
+  --peso-regular: 400;
+  --peso-medio: 600;
+  --peso-forte: 700;
+  --lh-corpo: 1.5;
+
+  /* Espaçamento (múltiplos de 4px) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+
+  /* Raios e sombras */
+  --raio-card: 12px;
+  --raio-botao: 8px;
+  --raio-badge: 999px;
+  --sombra-card: 0 1px 3px rgba(109, 40, 217, 0.12);
+  --sombra-flutuante: 0 8px 24px rgba(109, 40, 217, 0.18);
+
+  /* Largura de conteúdo */
+  --largura-max: 1200px;
+  --bp-mobile: 640px;
+}
