@@ -32,13 +32,19 @@ module.exports = async (req, res) => {
       appProperties,
     };
 
+    // O Google só habilita CORS na sessão resumável se o header Origin do navegador
+    // for enviado JÁ na criação da sessão. Repassamos o Origin da requisição do browser.
+    const origin = req.headers.origin || (req.headers.host ? 'https://' + req.headers.host : '');
+    const cabecalhos = {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json; charset=UTF-8',
+      'X-Upload-Content-Type': contentType || 'application/octet-stream',
+    };
+    if (origin) cabecalhos['Origin'] = origin;
+
     const r = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id', {
       method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + token,
-        'Content-Type': 'application/json; charset=UTF-8',
-        'X-Upload-Content-Type': contentType || 'application/octet-stream',
-      },
+      headers: cabecalhos,
       body: JSON.stringify(metadata),
     });
     if (!r.ok) {
