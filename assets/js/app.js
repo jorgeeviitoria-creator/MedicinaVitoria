@@ -69,7 +69,7 @@
         return;
       }
       resultados.slice(0, 30).forEach(function (i) {
-        var link = UI.el('a', { class: 'busca-item', href: i.arquivo }, [
+        var link = UI.el('a', { class: 'busca-item', href: 'ver.html?item=' + encodeURIComponent(i.id) }, [
           UI.el('div', { class: 'busca-item__titulo', text: i.titulo }),
           UI.el('div', { class: 'busca-item__meta', text: Manifesto.labelMateria(i.semestre, i.materia) + ' · ' + i.periodo + ' · ' + i.tipo }),
         ]);
@@ -459,6 +459,33 @@
     render();
   }
 
+  /* ---------- Página: Visualizador de material ---------- */
+  function initVer() {
+    var p = qs();
+    var frame = $('#ver-frame');
+    var voltar = $('#ver-voltar');
+    var item = p.item ? Manifesto.itemPorId(p.item) : null;
+
+    if (!item) {
+      if (frame) frame.style.display = 'none';
+      voltar.setAttribute('href', 'index.html');
+      var box = $('#ver-conteudo');
+      box.className = 'container ver-erro';
+      box.appendChild(UI.renderVazio('🔍', 'Material não encontrado',
+        'Este material não existe no manifesto. <a href="index.html">Voltar ao dashboard</a>.'));
+      return;
+    }
+
+    document.title = item.titulo + ' — Portal de Estudos';
+    frame.src = item.arquivo;
+    // "Voltar" leva pra página da matéria (destino determinístico, funciona até se
+    // o material foi aberto direto pelo link, sem histórico).
+    voltar.setAttribute('href',
+      'materia.html?semestre=' + encodeURIComponent(item.semestre) +
+      '&materia=' + encodeURIComponent(item.materia));
+    voltar.setAttribute('title', 'Voltar para ' + Manifesto.labelMateria(item.semestre, item.materia));
+  }
+
   /* ---------- Bootstrap ---------- */
   function boot() {
     Promise.all([Manifesto.carregarManifesto().catch(function () { return null; }), Manifesto.carregarConfig().catch(function () { return null; })])
@@ -470,6 +497,7 @@
           else if (pagina === 'materia') initMateria();
           else if (pagina === 'calculadora') initCalculadora();
           else if (pagina === 'historico') initHistorico();
+          else if (pagina === 'ver') initVer();
         } catch (e) {
           console.error('[app] erro ao iniciar página', pagina, e);
         }

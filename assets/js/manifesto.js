@@ -111,6 +111,11 @@
     });
   }
 
+  function itemPorId(id) {
+    if (!_manifesto) return null;
+    return (_manifesto.itens || []).find(function (i) { return i.id === id; }) || null;
+  }
+
   function configDaMateria(semestreSlug, materiaSlug) {
     var cfgSem = _config && _config[semestreSlug];
     var m = cfgSem && cfgSem.materias && cfgSem.materias[materiaSlug];
@@ -145,6 +150,7 @@
     listarPorMateria: listarPorMateria,
     contagemPorTipo: contagemPorTipo,
     buscar: buscar,
+    itemPorId: itemPorId,
     configDaMateria: configDaMateria,
     labelMateria: labelMateria,
     labelSemestre: labelSemestre,

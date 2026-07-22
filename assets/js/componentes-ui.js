@@ -78,7 +78,7 @@
     var meta = 'Modificado em ' + (item.dataModificacao || '—');
     if (fmt !== 'html') meta = fmt.toUpperCase() + ' · ' + meta;
     return el('a', {
-      class: 'card', href: item.arquivo,
+      class: 'card', href: 'ver.html?item=' + encodeURIComponent(item.id),
       style: 'display:block;text-decoration:none;color:inherit;margin-bottom:12px;',
     }, [
       el('div', { style: 'display:flex;justify-content:space-between;gap:8px;align-items:center;' }, [
