@@ -138,7 +138,7 @@
       listar(sem, mat, tipo).then(function (itens) {
         lista.innerHTML = '';
         if (!itens.length) {
-          lista.appendChild(UI.renderVazio('📂', 'Nenhum ' + (tipo === 'anotacoes' ? 'anotação' : 'trabalho') + ' ainda',
+          lista.appendChild(UI.renderVazio('📂', tipo === 'anotacoes' ? 'Nenhuma anotação ainda' : 'Nenhum trabalho ainda',
             'Clique em <strong>Enviar</strong> pra anexar um arquivo (PDF, imagem, vídeo…).'));
           return;
         }
