@@ -1,64 +1,70 @@
-/* calculadora.js — sistema de notas por PONTOS. Funções puras, testáveis.
+/* calculadora.js — sistema de notas por PONTOS, totalmente configurável.
+   Cada item de avaliação pode ser ligado/desligado e ter a pontuação editada.
    Exposto em window.Calc.
 
-   Sem prática (total 100):  P1 20 · P2 20 · P3 40 · escrito 5 · apresentado 5 · linea 5 · assistência 2 · bitácoras 3
-   Com prática (total 110):  P1 20 +5 · P2 20 +5 · P3 30 +10 · escrito 5 · apresentado 5 · linea 5 · assistência 2 · bitácoras 3
+   Modelo sem prática (100): P1 20 · P2 20 · P3 40 · escrito 5 · apresentado 5 · Linea 5 · assistência 2 · bitácoras 3
+   Modelo com prática (110): P1 20 +5 · P2 20 +5 · P3 30 +10 · (mesmos extras)
 */
 (function (global) {
   'use strict';
 
-  var EXTRAS = [
-    { id: 'TRAB_ESCRITO', label: 'Trabalho escrito', max: 5 },
-    { id: 'TRAB_APRESENTADO', label: 'Trabalho apresentado', max: 5 },
-    { id: 'LINEA', label: 'Linea / Trivia', max: 5 },
-    { id: 'ASSISTENCIA', label: 'Assistência', max: 2 },
-    { id: 'BITACORAS', label: 'Bitácoras', max: 3 },
+  /** Catálogo padrão. `ativoPadrao` define o que já vem ligado. */
+  var CATALOGO = [
+    { id: 'P1', label: 'P1', max: 20, ativoPadrao: true, grupo: 'Provas' },
+    { id: 'P1_PRAT', label: 'P1 prática', max: 5, ativoPadrao: false, grupo: 'Provas' },
+    { id: 'P2', label: 'P2', max: 20, ativoPadrao: true, grupo: 'Provas' },
+    { id: 'P2_PRAT', label: 'P2 prática', max: 5, ativoPadrao: false, grupo: 'Provas' },
+    { id: 'P3', label: 'P3', max: 40, ativoPadrao: true, grupo: 'Provas' },
+    { id: 'P3_PRAT', label: 'P3 prática', max: 10, ativoPadrao: false, grupo: 'Provas' },
+    { id: 'TRAB_ESCRITO', label: 'Trabalho escrito', max: 5, ativoPadrao: true, grupo: 'Outros' },
+    { id: 'TRAB_APRESENTADO', label: 'Trabalho apresentado', max: 5, ativoPadrao: true, grupo: 'Outros' },
+    { id: 'LINEA', label: 'Linea / Trivia', max: 5, ativoPadrao: true, grupo: 'Outros' },
+    { id: 'ASSISTENCIA', label: 'Assistência', max: 2, ativoPadrao: true, grupo: 'Outros' },
+    { id: 'BITACORAS', label: 'Bitácoras', max: 3, ativoPadrao: true, grupo: 'Outros' },
   ];
 
-  /** Lista de componentes da matéria, conforme tenha ou não prática. */
-  function componentes(temPratica) {
-    var provas = temPratica
-      ? [
-          { id: 'P1', label: 'P1', max: 20, grupo: 'Provas' },
-          { id: 'P1_PRAT', label: 'P1 prática', max: 5, grupo: 'Provas' },
-          { id: 'P2', label: 'P2', max: 20, grupo: 'Provas' },
-          { id: 'P2_PRAT', label: 'P2 prática', max: 5, grupo: 'Provas' },
-          { id: 'P3', label: 'P3', max: 30, grupo: 'Provas' },
-          { id: 'P3_PRAT', label: 'P3 prática', max: 10, grupo: 'Provas' },
-        ]
-      : [
-          { id: 'P1', label: 'P1', max: 20, grupo: 'Provas' },
-          { id: 'P2', label: 'P2', max: 20, grupo: 'Provas' },
-          { id: 'P3', label: 'P3', max: 40, grupo: 'Provas' },
-        ];
-    return provas.concat(EXTRAS.map(function (e) {
-      return { id: e.id, label: e.label, max: e.max, grupo: 'Outros' };
-    }));
+  /** Itens de um dos dois modelos prontos. */
+  function preset(temPratica) {
+    return CATALOGO.map(function (c) {
+      var it = { id: c.id, label: c.label, max: c.max, ativo: c.ativoPadrao, grupo: c.grupo };
+      if (temPratica) {
+        if (/_PRAT$/.test(c.id)) it.ativo = true;
+        if (c.id === 'P3') it.max = 30;
+      }
+      return it;
+    });
   }
 
-  function totalPossivel(comps) {
-    return comps.reduce(function (a, c) { return a + c.max; }, 0);
+  /** Só os itens que contam (ligados e com pontuação > 0). */
+  function ativos(itens) {
+    return (itens || []).filter(function (i) { return i.ativo && Number(i.max) > 0; });
+  }
+
+  function totalPossivel(itens) {
+    return ativos(itens).reduce(function (a, c) { return a + Number(c.max); }, 0);
   }
 
   function num(v) { return (typeof v === 'number' && isFinite(v)) ? v : null; }
 
+  /** Cria um item personalizado com id único. */
+  function novoItem(label, max) {
+    var base = String(label || 'Item').toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 24) || 'ITEM';
+    return { id: 'X_' + base + '_' + Date.now().toString(36), label: label || 'Item', max: Number(max) || 0, ativo: true, grupo: 'Outros', custom: true };
+  }
+
   /**
-   * calcularSituacao(notas, comps, minimaPontos)
-   * @param {Object} notas mapa { COMPONENTE_ID: pontos }
-   * @returns {{
-   *   ganhos:number, total:number, lancados:string[], pendentes:string[],
-   *   possivelRestante:number, maximoPossivel:number, faltam:number,
-   *   jaGarantido:boolean, atingivel:boolean, percentual:number,
-   *   status:'sucesso'|'alerta'|'erro'|'neutro', texto:string
-   * }}
+   * calcularSituacao(notas, itens, minimaPontos) — considera só os itens ativos.
+   * @returns {{ganhos,total,lancados,pendentes,possivelRestante,maximoPossivel,
+   *            faltam,jaGarantido,atingivel,percentual,status,texto}}
    */
-  function calcularSituacao(notas, comps, minimaPontos) {
+  function calcularSituacao(notas, itens, minimaPontos) {
     notas = notas || {};
+    var comps = ativos(itens);
     var ganhos = 0, possivelRestante = 0;
     var lancados = [], pendentes = [];
     comps.forEach(function (c) {
       var v = num(notas[c.id]);
-      if (v == null) { pendentes.push(c.id); possivelRestante += c.max; }
+      if (v == null) { pendentes.push(c.id); possivelRestante += Number(c.max); }
       else { lancados.push(c.id); ganhos += v; }
     });
     var total = totalPossivel(comps);
@@ -85,7 +91,7 @@
     };
   }
 
-  /** valida pontos de um componente: 0..max, no máximo 1 casa decimal. */
+  /** valida pontos de um item: 0..max, no máximo 1 casa decimal. */
   function validarNota(bruto, max) {
     if (bruto === '' || bruto == null) return { ok: false, erro: 'Vazio.' };
     var s = String(bruto).replace(',', '.').trim();
@@ -96,13 +102,15 @@
   }
 
   /** mínima padrão: 60% do total possível. */
-  function minimaPadrao(comps) {
-    return Math.round(totalPossivel(comps) * 0.6 * 10) / 10;
+  function minimaPadrao(itens) {
+    return Math.round(totalPossivel(itens) * 0.6 * 10) / 10;
   }
 
   global.Calc = {
-    EXTRAS: EXTRAS,
-    componentes: componentes,
+    CATALOGO: CATALOGO,
+    preset: preset,
+    ativos: ativos,
+    novoItem: novoItem,
     totalPossivel: totalPossivel,
     calcularSituacao: calcularSituacao,
     validarNota: validarNota,

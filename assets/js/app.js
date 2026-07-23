@@ -35,30 +35,32 @@
     return (r % 1 === 0 ? String(r) : r.toFixed(1)).replace('.', ',');
   }
 
-  /** rótulo legível de cada item de nota (P1, P1 prática, Bitácoras, …). */
-  var LABEL_COMP = (function () {
+  /** rótulo legível de um item (procura na config da matéria, depois no catálogo). */
+  var LABEL_PADRAO = (function () {
     var m = {};
-    Calc.componentes(true).concat(Calc.componentes(false)).forEach(function (c) { m[c.id] = c.label; });
+    Calc.CATALOGO.forEach(function (c) { m[c.id] = c.label; });
     return m;
   })();
-  function labelComp(id) { return LABEL_COMP[id] || id; }
+  function labelComp(id, itens) {
+    if (itens) { for (var i = 0; i < itens.length; i++) if (itens[i].id === id) return itens[i].label; }
+    return LABEL_PADRAO[id] || id;
+  }
 
-  /** config efetiva da matéria: padrão do JSON + ajustes salvos no navegador. */
+  /** config efetiva da matéria: modelo padrão + ajustes salvos no navegador. */
   function configEfetiva(sem, mat) {
     var base = Manifesto.configDaMateria(sem, mat) || {};
     var over = Notas.obterOverride(sem, mat) || {};
-    var temPratica = (over.temPratica != null) ? !!over.temPratica : !!base.temPratica;
-    var comps = Calc.componentes(temPratica);
+    var itens = (over.itens && over.itens.length) ? over.itens : Calc.preset(!!base.temPratica);
     var minima = (over.minimaPontos != null) ? Number(over.minimaPontos)
-      : (base.minimaPontos != null ? Number(base.minimaPontos) : Calc.minimaPadrao(comps));
-    return { temPratica: temPratica, minimaPontos: minima, comps: comps };
+      : (base.minimaPontos != null ? Number(base.minimaPontos) : Calc.minimaPadrao(itens));
+    return { itens: itens, minimaPontos: minima };
   }
 
   /** situação (pontos) de uma matéria a partir das notas + config. */
   function statusMateria(sem, mat) {
     var cfg = configEfetiva(sem, mat);
     var mapa = Notas.notasComoMapa(sem, mat);
-    var s = Calc.calcularSituacao(mapa, cfg.comps, cfg.minimaPontos);
+    var s = Calc.calcularSituacao(mapa, cfg.itens, cfg.minimaPontos);
     return { status: s.status, texto: s.texto, sit: s, cfg: cfg };
   }
 
@@ -275,18 +277,31 @@
 
     selMat.addEventListener('change', carregarMateria);
 
-    var comps = [];
+    var itens = [];          // configuração completa (itens ativos e inativos)
+    var minima = 60;
     var campos = $('#campos-notas');
-    var chkPratica = $('#tem-pratica');
+    var editor = $('#editor-itens');
     var inpMinima = $('#minima-pontos');
     var totalInfo = $('#total-info');
 
+    function salvarConfig() {
+      try { Notas.salvarOverride(selSem.value, selMat.value, { itens: itens, minimaPontos: minima }); }
+      catch (e) { UI.renderToast(e.message, 'erro', 6000); }
+    }
+
+    /* ----- campos de lançamento (só itens ativos) ----- */
     function renderCampos(mapa) {
       campos.innerHTML = '';
+      var ativos = Calc.ativos(itens);
+      if (!ativos.length) {
+        campos.appendChild(UI.el('p', { class: 'card__meta', text: 'Nenhum item ativo. Abra “Configurar avaliação” e ligue os itens.' }));
+        return;
+      }
       var ordem = [], grupos = {};
-      comps.forEach(function (c) {
-        if (!grupos[c.grupo]) { grupos[c.grupo] = []; ordem.push(c.grupo); }
-        grupos[c.grupo].push(c);
+      ativos.forEach(function (c) {
+        var g = c.grupo || 'Outros';
+        if (!grupos[g]) { grupos[g] = []; ordem.push(g); }
+        grupos[g].push(c);
       });
       ordem.forEach(function (g) {
         var grid = UI.el('div', { class: 'notas-grid' });
@@ -299,17 +314,55 @@
         });
         campos.append(UI.el('div', { class: 'grupo-tipo__titulo', text: g }), grid);
       });
-      comps.forEach(function (c) {
+      ativos.forEach(function (c) {
         var el = $('#nota-' + c.id);
         el.value = (mapa[c.id] != null) ? String(mapa[c.id]).replace('.', ',') : '';
         el.addEventListener('input', validarTudo);
       });
     }
 
+    /* ----- editor: liga/desliga item e edita a pontuação ----- */
+    function renderEditor() {
+      editor.innerHTML = '';
+      itens.forEach(function (it) {
+        var chk = UI.el('input', { type: 'checkbox' });
+        chk.checked = !!it.ativo;
+        chk.addEventListener('change', function () { it.ativo = chk.checked; aplicar(); });
+
+        var pts = UI.el('input', { class: 'input item-config__pts', type: 'number', min: '0', step: '0.5', value: it.max, 'aria-label': 'Pontos de ' + it.label });
+        pts.addEventListener('input', function () { it.max = Number(pts.value) || 0; salvarConfig(); validarTudo(); });
+        pts.addEventListener('change', function () { aplicar(); });
+
+        var linha = UI.el('div', { class: 'item-config' + (it.ativo ? '' : ' item-config--off') }, [
+          UI.el('label', { class: 'item-config__toggle' }, [chk, UI.el('span', { text: it.label })]),
+          pts,
+          UI.el('span', { class: 'card__meta', text: 'pts' }),
+        ]);
+        if (it.custom) {
+          var del = UI.el('button', { class: 'btn btn--perigo btn--pequeno', type: 'button', title: 'Remover item' }, ['×']);
+          del.addEventListener('click', function () {
+            itens = itens.filter(function (x) { return x.id !== it.id; });
+            aplicar();
+          });
+          linha.appendChild(del);
+        }
+        editor.appendChild(linha);
+      });
+    }
+
+    function aplicar() {
+      salvarConfig();
+      renderEditor();
+      renderCampos(Notas.notasComoMapa(selSem.value, selMat.value));
+      validarTudo();
+    }
+
     function lerNotasInput() {
       var mapa = {};
-      comps.forEach(function (c) {
-        var v = $('#nota-' + c.id).value;
+      Calc.ativos(itens).forEach(function (c) {
+        var el = $('#nota-' + c.id);
+        if (!el) return;
+        var v = el.value;
         if (v !== '') { var r = Calc.validarNota(v, c.max); if (r.ok) mapa[c.id] = r.valor; }
       });
       return mapa;
@@ -319,25 +372,29 @@
       var sem = selSem.value, mat = selMat.value;
       if (!mat) return;
       var cfg = configEfetiva(sem, mat);
-      comps = cfg.comps;
-      chkPratica.checked = cfg.temPratica;
-      inpMinima.value = cfg.minimaPontos;
+      itens = JSON.parse(JSON.stringify(cfg.itens));
+      minima = cfg.minimaPontos;
+      inpMinima.value = minima;
+      renderEditor();
       renderCampos(Notas.notasComoMapa(sem, mat));
       validarTudo();
     }
 
     function validarTudo() {
       var ok = true;
-      comps.forEach(function (c) {
-        var campo = $('#nota-' + c.id), erroEl = $('#erro-' + c.id), v = campo.value;
+      Calc.ativos(itens).forEach(function (c) {
+        var campo = $('#nota-' + c.id), erroEl = $('#erro-' + c.id);
+        if (!campo) return;
+        var v = campo.value;
         if (v === '') { campo.classList.remove('input--erro'); erroEl.textContent = ''; return; }
         var r = Calc.validarNota(v, c.max);
         if (!r.ok) { campo.classList.add('input--erro'); erroEl.textContent = r.erro; ok = false; }
         else { campo.classList.remove('input--erro'); erroEl.textContent = ''; }
       });
-      var total = Calc.totalPossivel(comps);
-      totalInfo.textContent = 'Total possível: ' + total + ' pontos.';
-      totalInfo.className = 'pesos-soma pesos-soma--ok';
+      var total = Calc.totalPossivel(itens);
+      totalInfo.textContent = 'Total possível: ' + total + ' pontos · aprovar com ' + fmtPts(minima)
+        + ' (' + (total ? Math.round((minima / total) * 100) : 0) + '%)';
+      totalInfo.className = 'pesos-soma ' + (minima <= total ? 'pesos-soma--ok' : 'pesos-soma--erro');
       atualizarResultado(ok);
       $('#btn-salvar').disabled = !ok;
       return ok;
@@ -346,9 +403,7 @@
     function atualizarResultado(ok) {
       var box = $('#resultado');
       if (!ok) { box.innerHTML = '<p class="card__meta">Corrija os campos destacados para ver a situação.</p>'; return; }
-      var minima = parseFloat(String(inpMinima.value).replace(',', '.'));
-      if (isNaN(minima)) minima = Calc.minimaPadrao(comps);
-      var s = Calc.calcularSituacao(lerNotasInput(), comps, minima);
+      var s = Calc.calcularSituacao(lerNotasInput(), itens, minima);
       var b = UI.renderBadge(s.status);
       box.innerHTML = '';
       box.append(
@@ -369,21 +424,31 @@
       }
     }
 
-    chkPratica.addEventListener('change', function () {
-      var novos = Calc.componentes(chkPratica.checked);
-      try {
-        Notas.salvarOverride(selSem.value, selMat.value, {
-          temPratica: chkPratica.checked, minimaPontos: Calc.minimaPadrao(novos),
-        });
-        UI.renderToast(chkPratica.checked ? 'Matéria com prática (total 110).' : 'Matéria sem prática (total 100).', 'sucesso');
-      } catch (e) { UI.renderToast(e.message, 'erro', 6000); }
-      carregarMateria();
+    /* ----- modelos prontos, mínima e item personalizado ----- */
+    $('#preset-sem').addEventListener('click', function () {
+      itens = Calc.preset(false); minima = Calc.minimaPadrao(itens); inpMinima.value = minima;
+      aplicar(); UI.renderToast('Modelo sem prática aplicado (100 pontos).', 'sucesso');
     });
-
+    $('#preset-com').addEventListener('click', function () {
+      itens = Calc.preset(true); minima = Calc.minimaPadrao(itens); inpMinima.value = minima;
+      aplicar(); UI.renderToast('Modelo com prática aplicado (110 pontos).', 'sucesso');
+    });
+    $('#btn-minima-60').addEventListener('click', function () {
+      minima = Calc.minimaPadrao(itens); inpMinima.value = minima; salvarConfig(); validarTudo();
+    });
     inpMinima.addEventListener('input', function () {
       var v = parseFloat(String(inpMinima.value).replace(',', '.'));
-      if (!isNaN(v)) { try { Notas.salvarOverride(selSem.value, selMat.value, { minimaPontos: v }); } catch (e) {} }
+      if (!isNaN(v)) { minima = v; salvarConfig(); }
       validarTudo();
+    });
+    $('#btn-add-item').addEventListener('click', function () {
+      var nome = ($('#novo-item-nome').value || '').trim();
+      var pts = parseFloat(String($('#novo-item-pts').value).replace(',', '.'));
+      if (!nome) { UI.renderToast('Dê um nome ao item.', 'erro'); return; }
+      if (isNaN(pts) || pts <= 0) { UI.renderToast('Informe a pontuação do item.', 'erro'); return; }
+      itens.push(Calc.novoItem(nome, pts));
+      $('#novo-item-nome').value = ''; $('#novo-item-pts').value = '';
+      aplicar(); UI.renderToast('Item “' + nome + '” adicionado.', 'sucesso');
     });
 
     $('#btn-salvar').addEventListener('click', function () {
@@ -391,7 +456,7 @@
       var sem = selSem.value, mat = selMat.value;
       var mapa = lerNotasInput();
       try {
-        comps.forEach(function (c) { if (mapa[c.id] != null) Notas.salvarNota(sem, mat, c.id, mapa[c.id]); });
+        Calc.ativos(itens).forEach(function (c) { if (mapa[c.id] != null) Notas.salvarNota(sem, mat, c.id, mapa[c.id]); });
         UI.renderToast('Lançamento salvo com sucesso.', 'sucesso');
       } catch (e) {
         UI.renderToast(e.message || 'Erro ao salvar.', 'erro', 6000);
@@ -399,6 +464,7 @@
     });
 
     carregarMateria();
+
   }
 
   /* ---------- Página: Histórico ---------- */
@@ -435,10 +501,13 @@
 
     /** pontuação máxima do item, conforme a config da matéria. */
     function maxDe(l) {
-      var comps = configEfetiva(l.semestre, l.materia).comps;
+      var comps = configEfetiva(l.semestre, l.materia).itens;
       for (var i = 0; i < comps.length; i++) if (comps[i].id === l.periodo) return comps[i].max;
       return null;
     }
+
+    /** rótulo do item já considerando itens personalizados da matéria. */
+    function rotulo(l) { return labelComp(l.periodo, configEfetiva(l.semestre, l.materia).itens); }
 
     function render() {
       var linhas = Notas.listarAvaliacoes(filtros());
@@ -457,7 +526,7 @@
         return [
           Manifesto.labelSemestre(l.semestre),
           Manifesto.labelMateria(l.semestre, l.materia),
-          labelComp(l.periodo),
+          rotulo(l),
           fmtPts(l.nota) + (maxDe(l) ? ' / ' + maxDe(l) : ''),
           fmtData(l.dataLancamento),
           l.dataEdicao ? fmtData(l.dataEdicao) : '—',
@@ -470,13 +539,13 @@
     function editar(l) {
       var max = maxDe(l) || 100;
       var atualTxt = String(l.nota).replace('.', ',');
-      var novo = global.prompt('Novos pontos — ' + Manifesto.labelMateria(l.semestre, l.materia) + ' · ' + labelComp(l.periodo) + ' (0 a ' + max + '):', atualTxt);
+      var novo = global.prompt('Novos pontos — ' + Manifesto.labelMateria(l.semestre, l.materia) + ' · ' + rotulo(l) + ' (0 a ' + max + '):', atualTxt);
       if (novo == null) return;
       var r = Calc.validarNota(novo, max);
       if (!r.ok) { UI.renderToast(r.erro, 'erro'); return; }
       UI.renderModal({
         titulo: 'Confirmar edição',
-        texto: 'Alterar ' + labelComp(l.periodo) + ' de ' + fmtPts(l.nota) + ' para ' + fmtPts(r.valor) + ' pontos? Isso gera uma nova entrada no histórico.',
+        texto: 'Alterar ' + rotulo(l) + ' de ' + fmtPts(l.nota) + ' para ' + fmtPts(r.valor) + ' pontos? Isso gera uma nova entrada no histórico.',
         confirmar: 'Salvar',
       }).then(function (ok) {
         if (!ok) return;
@@ -488,7 +557,7 @@
     function excluir(l) {
       UI.renderModal({
         titulo: 'Excluir lançamento',
-        texto: 'Excluir ' + fmtPts(l.nota) + ' pontos de ' + Manifesto.labelMateria(l.semestre, l.materia) + ' · ' + labelComp(l.periodo) + '? A ação fica registrada no histórico.',
+        texto: 'Excluir ' + fmtPts(l.nota) + ' pontos de ' + Manifesto.labelMateria(l.semestre, l.materia) + ' · ' + rotulo(l) + '? A ação fica registrada no histórico.',
         confirmar: 'Excluir', perigo: true,
       }).then(function (ok) {
         if (!ok) return;

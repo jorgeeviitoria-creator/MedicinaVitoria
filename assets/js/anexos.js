@@ -127,7 +127,9 @@
       ['Enviar ' + (tipo === 'anotacoes' ? 'anotação' : 'trabalho')]);
     var progresso = UI.el('div', { class: 'anexo-progress', hidden: 'hidden' }, [UI.el('div', { class: 'anexo-progress__bar' })]);
     var lista = UI.el('div', { class: 'anexo-lista' });
-    var toolbar = UI.el('div', { class: 'anexo-toolbar' }, [btnEnviar, inputFile, progresso]);
+    var btnSenha = UI.el('button', { class: 'btn btn--secundario btn--pequeno', type: 'button', title: 'Trocar a senha guardada neste navegador' }, ['🔒 Trocar senha']);
+    btnSenha.addEventListener('click', function () { limparSenha(); obterSenha(true); carregar(); });
+    var toolbar = UI.el('div', { class: 'anexo-toolbar' }, [btnEnviar, inputFile, btnSenha, progresso]);
     painel.append(toolbar, lista);
 
     function carregar() {
@@ -143,8 +145,18 @@
         itens.forEach(function (item) { lista.appendChild(cardAnexo(item, carregar)); });
       }).catch(function (e) {
         lista.innerHTML = '';
-        lista.appendChild(UI.renderVazio('⚠️', 'Não deu pra carregar', UI.esc(e.message) +
-          '<br><button class="btn btn--secundario btn--pequeno" onclick="location.reload()">Tentar de novo</button>'));
+        var ehSenha = /senha/i.test(e.message || '');
+        var box = UI.renderVazio(ehSenha ? '🔒' : '⚠️',
+          ehSenha ? 'Senha incorreta' : 'Não deu pra carregar',
+          UI.esc(e.message || ''));
+        var btn = UI.el('button', { class: 'btn btn--primario', type: 'button', style: 'margin-top:12px;' },
+          [ehSenha ? 'Digitar senha de novo' : 'Tentar de novo']);
+        btn.addEventListener('click', function () {
+          if (ehSenha) { limparSenha(); obterSenha(true); }
+          carregar();
+        });
+        box.appendChild(btn);
+        lista.appendChild(box);
       });
     }
 

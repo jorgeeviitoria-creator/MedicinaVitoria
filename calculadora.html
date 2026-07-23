@@ -49,17 +49,36 @@
         <div id="campos-notas"></div>
 
         <details class="config-pesos">
-          <summary>Configurar esta matéria</summary>
-          <label class="check-linha">
-            <input type="checkbox" id="tem-pratica">
-            <span>Esta matéria <strong>tem prática</strong> (muda os itens e o total para 110)</span>
-          </label>
-          <div class="campo" style="max-width:220px;margin-top:12px;">
-            <label class="campo__label" for="minima-pontos">Pontos para aprovar</label>
-            <input id="minima-pontos" class="input" type="number" min="0" step="0.5">
-            <span class="campo__ajuda">Padrão: 60% do total.</span>
+          <summary>⚙️ Configurar avaliação</summary>
+
+          <p class="campo__ajuda">Ligue/desligue cada item e ajuste a pontuação. Vale só para esta matéria.</p>
+          <div class="barra-topo__acoes" style="margin-bottom:12px;">
+            <button id="preset-sem" class="btn btn--secundario btn--pequeno" type="button">Modelo sem prática (100)</button>
+            <button id="preset-com" class="btn btn--secundario btn--pequeno" type="button">Modelo com prática (110)</button>
+          </div>
+
+          <div id="editor-itens" class="editor-itens"></div>
+
+          <div class="filtros" style="margin:16px 0 0;align-items:flex-end;">
+            <div class="campo" style="max-width:200px;">
+              <label class="campo__label" for="minima-pontos">Pontos para aprovar</label>
+              <input id="minima-pontos" class="input" type="number" min="0" step="0.5">
+            </div>
+            <button id="btn-minima-60" class="btn btn--secundario btn--pequeno" type="button">Usar 60% do total</button>
           </div>
           <p id="total-info" class="pesos-soma"></p>
+
+          <div class="filtros" style="margin-top:16px;align-items:flex-end;">
+            <div class="campo" style="flex:1 1 180px;">
+              <label class="campo__label" for="novo-item-nome">Novo item</label>
+              <input id="novo-item-nome" class="input" type="text" placeholder="Ex.: Seminário">
+            </div>
+            <div class="campo" style="max-width:110px;">
+              <label class="campo__label" for="novo-item-pts">Pontos</label>
+              <input id="novo-item-pts" class="input" type="number" min="0" step="0.5" placeholder="5">
+            </div>
+            <button id="btn-add-item" class="btn btn--secundario btn--pequeno" type="button">Adicionar</button>
+          </div>
         </details>
 
         <button id="btn-salvar" class="btn btn--primario" type="button" style="margin-top:12px;">Salvar lançamento</button>
