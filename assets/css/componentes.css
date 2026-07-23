@@ -235,6 +235,35 @@
   .anexo-acoes .btn { flex: 1; justify-content: center; }
 }
 
+/* ---------- Revisão (flashcards SM-2) ---------- */
+.flashcard {
+  position: relative; width: 100%; min-height: 220px; cursor: pointer;
+  border: 1px solid var(--cor-borda); border-radius: var(--raio-card);
+  background: linear-gradient(160deg, var(--cor-primaria-clara), var(--cor-superficie));
+  display: grid; place-items: center; padding: var(--sp-8) var(--sp-6); text-align: center;
+  transition: transform .15s ease;
+}
+.flashcard:active { transform: scale(.995); }
+.flashcard:focus-visible { outline: 2px solid var(--cor-primaria); outline-offset: 2px; }
+.flashcard__face { font-size: 1.25rem; line-height: 1.5; }
+.flashcard__frente { font-weight: var(--peso-medio); }
+.flashcard__verso { display: none; color: var(--cor-primaria); }
+.flashcard.rev-flip .flashcard__frente { display: none; }
+.flashcard.rev-flip .flashcard__verso { display: block; }
+
+.rev-notas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; }
+.rev-notas .btn { justify-content: center; }
+.rev-notas .btn small { opacity: .7; margin-left: 4px; }
+@media (max-width: 640px) { .rev-notas { grid-template-columns: 1fr 1fr; } }
+
+.rev-card-item {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: 12px 14px; margin-bottom: 8px;
+  border: 1px solid var(--cor-borda); border-radius: var(--raio-card); background: var(--cor-superficie);
+}
+.rev-card-item__info { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+.rev-card-item__info strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* ---------- Cronograma de provas ---------- */
 .agenda-item {
   display: flex; align-items: center; gap: var(--sp-3);

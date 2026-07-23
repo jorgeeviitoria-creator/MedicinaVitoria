@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revisão — Portal de Estudos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/variaveis.css">
+  <link rel="stylesheet" href="assets/css/componentes.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#6D28D9">
+  <link rel="apple-touch-icon" href="icone-192.png">
+  <script src="assets/js/pwa.js" defer></script>
+  <script src="assets/js/tema.js"></script>
+</head>
+<body data-pagina="revisao">
+  <header class="header">
+    <div class="header__interno">
+      <a class="header__marca" href="index.html"><span class="logo" aria-hidden="true">V</span> Portal da Vitória</a>
+      <nav class="header__nav" aria-label="Navegação principal">
+        <a href="index.html" data-pagina="dashboard">Início</a>
+        <a href="agenda.html" data-pagina="agenda">Provas</a>
+        <a href="revisao.html" data-pagina="revisao">Revisão</a>
+        <a href="calculadora.html" data-pagina="calculadora">Calculadora</a>
+        <a href="historico.html" data-pagina="historico">Histórico</a>
+        <a href="party.html" data-pagina="party">Party</a>
+        <button id="btn-tema" class="btn-tema" type="button" aria-label="Alternar modo noturno">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 class="pagina-titulo">🧠 Revisão</h1>
+    <p class="pagina-sub">Flashcards com repetição espaçada: cada card volta na hora certa pra fixar de vez.</p>
+
+    <!-- área de estudo -->
+    <section id="estudo" class="card" hidden aria-label="Sessão de estudo">
+      <div class="barra-topo" style="margin-bottom:12px;">
+        <span id="estudo-progresso" class="card__meta"></span>
+        <button id="btn-fechar-estudo" class="btn btn--secundario btn--pequeno" type="button">Encerrar</button>
+      </div>
+      <div id="flashcard" class="flashcard" tabindex="0" role="button" aria-label="Cartão — clique para ver a resposta">
+        <div class="flashcard__face flashcard__frente"><span id="flash-frente"></span></div>
+        <div class="flashcard__face flashcard__verso"><span id="flash-verso"></span></div>
+      </div>
+      <button id="btn-mostrar" class="btn btn--primario" type="button" style="width:100%;justify-content:center;margin-top:16px;">Mostrar resposta (espaço)</button>
+      <div id="estudo-notas" class="rev-notas" hidden>
+        <button id="nota-errei" class="btn btn--perigo" type="button">Errei <small>(1)</small></button>
+        <button id="nota-dificil" class="btn btn--secundario" type="button">Difícil <small>(2)</small></button>
+        <button id="nota-bom" class="btn btn--secundario" type="button">Bom <small>(3)</small></button>
+        <button id="nota-facil" class="btn btn--primario" type="button">Fácil <small>(4)</small></button>
+      </div>
+    </section>
+
+    <!-- baralho -->
+    <div id="baralho">
+      <section class="card" aria-label="Estudar" style="margin-bottom:24px;text-align:center;">
+        <p id="resumo-revisao" class="card__meta" style="margin-bottom:12px;"></p>
+        <button id="btn-estudar" class="btn btn--primario" type="button" style="min-width:220px;justify-content:center;">Estudar</button>
+      </section>
+
+      <section class="card" aria-label="Adicionar card" style="margin-bottom:24px;">
+        <h2 class="card__titulo">Novo card</h2>
+        <div class="campo" style="max-width:280px;">
+          <label class="campo__label" for="rev-materia">Matéria (opcional)</label>
+          <select id="rev-materia" class="select"></select>
+        </div>
+        <div class="notas-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="campo">
+            <label class="campo__label" for="rev-frente">Pergunta (frente)</label>
+            <textarea id="rev-frente" class="input" rows="3" placeholder="Ex.: Qual a coloração de Gram das bactérias com parede espessa?"></textarea>
+          </div>
+          <div class="campo">
+            <label class="campo__label" for="rev-verso">Resposta (verso)</label>
+            <textarea id="rev-verso" class="input" rows="3" placeholder="Ex.: Gram-positivas (roxas)."></textarea>
+          </div>
+        </div>
+        <button id="btn-add-card" class="btn btn--secundario" type="button">Adicionar card</button>
+      </section>
+
+      <h2 class="card__titulo" style="margin-bottom:12px;">Meu baralho</h2>
+      <div id="lista-cards" aria-live="polite"></div>
+    </div>
+  </main>
+
+  <script src="data/conteudo.js"></script>
+  <script src="assets/js/componentes-ui.js"></script>
+  <script src="assets/js/manifesto.js"></script>
+  <script src="assets/js/revisao.js"></script>
+  <script src="assets/js/revisao-ui.js"></script>
+</body>
+</html>
