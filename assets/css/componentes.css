@@ -235,6 +235,20 @@
   .anexo-acoes .btn { flex: 1; justify-content: center; }
 }
 
+/* ---------- Cronograma de provas ---------- */
+.agenda-item {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: 12px 14px; margin-bottom: 8px;
+  border: 1px solid var(--cor-borda); border-radius: var(--raio-card); background: var(--cor-superficie);
+}
+.agenda-item--passada { opacity: .55; }
+.agenda-item__info { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+.agenda-item__info strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 640px) {
+  .agenda-item { flex-wrap: wrap; }
+  .agenda-item__info { flex: 1 1 100%; }
+}
+
 /* ---------- Modo Party (roleta + placar) ---------- */
 .party-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-6); align-items: start; }
 .roleta-wrap { position: relative; display: flex; justify-content: center; }

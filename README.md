@@ -23,6 +23,23 @@ Duas formas:
 > As duas formas funcionam. O `fetch` de JSON via `file://` é bloqueado pelos navegadores por
 > segurança (CORS), por isso o gerador também emite `data/conteudo.js` com os dados embutidos.
 
+## O que o portal tem
+
+| Página | O que faz |
+|---|---|
+| `index.html` | Dashboard com as matérias e a situação de notas de cada uma |
+| `materia.html` | Materiais por período (P1/P2/P3) + abas **Anotações** e **Trabalhos** (anexos no Google Drive) |
+| `agenda.html` | Cronograma de provas com contagem regressiva |
+| `calculadora.html` | Notas por **pontos**, com cada item de avaliação configurável |
+| `historico.html` | Todos os lançamentos, com edição, exclusão e backup |
+| `party.html` | Modo Party: roleta de nomes pra sortear quem responde + placar |
+| `ver.html` | Visualizador de material (tela cheia com botão Voltar) |
+
+Extras: **modo noturno** (botão da lua, segue o sistema por padrão), **busca tolerante a typo/acento**
+e **PWA** — dá pra instalar na tela inicial do celular e navegar offline nas páginas já visitadas.
+
+Os anexos (upload pro Drive) só funcionam no site publicado, porque dependem das funções em `/api`.
+
 ## Estrutura
 
 ```

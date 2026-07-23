@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal de Estudos da Vitória</title>
+  <title>Cronograma de provas — Portal de Estudos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -16,15 +16,10 @@
   <script src="assets/js/pwa.js" defer></script>
   <script src="assets/js/tema.js"></script>
 </head>
-<body data-pagina="dashboard">
+<body data-pagina="agenda">
   <header class="header">
     <div class="header__interno">
       <a class="header__marca" href="index.html"><span class="logo" aria-hidden="true">V</span> Portal da Vitória</a>
-      <div class="header__busca">
-        <label class="sr-only" for="busca-global">Buscar material em todas as matérias</label>
-        <input id="busca-global" class="input" type="search" placeholder="Buscar material…" autocomplete="off" aria-label="Buscar material">
-        <div id="busca-dropdown" class="busca-dropdown" role="listbox" hidden></div>
-      </div>
       <nav class="header__nav" aria-label="Navegação principal">
         <a href="index.html" data-pagina="dashboard">Início</a>
         <a href="agenda.html" data-pagina="agenda">Provas</a>
@@ -37,25 +32,33 @@
   </header>
 
   <main class="container">
-    <div class="barra-topo">
-      <div>
-        <h1 class="pagina-titulo">Minhas matérias</h1>
-        <p class="pagina-sub">Resumos, simulados, perguntas e painéis, organizados por período.</p>
-      </div>
-      <div class="campo" style="margin:0;min-width:220px;">
-        <label class="campo__label" for="seletor-semestre">Semestre</label>
-        <select id="seletor-semestre" class="select" aria-label="Selecionar semestre"></select>
-      </div>
-    </div>
+    <h1 class="pagina-titulo">📅 Cronograma de provas</h1>
+    <p class="pagina-sub">Marque as datas e acompanhe quanto falta pra cada uma.</p>
 
-    <div id="grid-materias" class="grid-cards" aria-live="polite"></div>
+    <section class="card" aria-label="Marcar prova" style="margin-bottom:24px;">
+      <div class="filtros" style="align-items:flex-end;margin-bottom:0;">
+        <div class="campo" style="flex:1 1 180px;">
+          <label class="campo__label" for="agenda-materia">Matéria</label>
+          <select id="agenda-materia" class="select"></select>
+        </div>
+        <div class="campo" style="flex:0 1 140px;">
+          <label class="campo__label" for="agenda-titulo">O quê</label>
+          <input id="agenda-titulo" class="input" type="text" placeholder="Ex.: P2" autocomplete="off">
+        </div>
+        <div class="campo" style="flex:0 1 170px;">
+          <label class="campo__label" for="agenda-data">Data</label>
+          <input id="agenda-data" class="input" type="date">
+        </div>
+        <button id="btn-add-prova" class="btn btn--primario" type="button">Marcar</button>
+      </div>
+    </section>
+
+    <div id="lista-agenda" aria-live="polite"></div>
   </main>
 
   <script src="data/conteudo.js"></script>
   <script src="assets/js/componentes-ui.js"></script>
-  <script src="assets/js/calculadora.js"></script>
   <script src="assets/js/manifesto.js"></script>
-  <script src="assets/js/notas.js"></script>
-  <script src="assets/js/app.js"></script>
+  <script src="assets/js/agenda.js"></script>
 </body>
 </html>

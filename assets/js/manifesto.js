@@ -100,15 +100,49 @@
     return { total: itens.length, porTipo: c };
   }
 
-  /** buscar por título (case-insensitive, ignora acento). Sem semestreSlug busca todos. */
+  /** true se todas as letras de `agulha` aparecem em ordem em `palheiro` (tolera letra faltando). */
+  function subsequencia(agulha, palheiro) {
+    var j = 0;
+    for (var i = 0; i < palheiro.length && j < agulha.length; i++) {
+      if (palheiro[i] === agulha[j]) j++;
+    }
+    return j === agulha.length;
+  }
+
+  /**
+   * buscar — ignora acentos e maiúsculas, aceita vários termos em qualquer ordem
+   * e tolera palavra incompleta/letra faltando. Ordena por relevância.
+   * Ex.: "micro teorica" acha "MICROBIOLOGIA I — TEÓRICA (P2)".
+   */
   function buscar(termo, semestreSlug) {
     if (!_manifesto || !termo) return [];
-    var t = normalizar(termo).trim();
-    if (!t) return [];
-    return (_manifesto.itens || []).filter(function (i) {
-      if (semestreSlug && i.semestre !== semestreSlug) return false;
-      return normalizar(i.titulo).indexOf(t) !== -1 || normalizar(i.materia).indexOf(t) !== -1;
+    var termos = normalizar(termo).trim().split(/\s+/).filter(Boolean);
+    if (!termos.length) return [];
+
+    var resultados = [];
+    (_manifesto.itens || []).forEach(function (i) {
+      if (semestreSlug && i.semestre !== semestreSlug) return;
+      var titulo = normalizar(i.titulo);
+      var extra = normalizar(
+        labelMateria(i.semestre, i.materia) + ' ' + i.materia + ' ' + i.tipo + ' ' + i.periodo
+      );
+      var palheiro = titulo + ' ' + extra;
+
+      var pontos = 0, todosBatem = true;
+      termos.forEach(function (t) {
+        if (titulo.indexOf(t) !== -1) pontos += 10;        // no título vale mais
+        else if (extra.indexOf(t) !== -1) pontos += 5;
+        else if (subsequencia(t, palheiro)) pontos += 1;   // tolerância a typo/abreviação
+        else todosBatem = false;
+      });
+      if (!todosBatem) return;
+      if (titulo.indexOf(termos.join(' ')) === 0) pontos += 5; // começa com o que digitou
+      resultados.push({ item: i, pontos: pontos });
     });
+
+    return resultados
+      .sort(function (a, b) { return b.pontos - a.pontos; })
+      .map(function (r) { return r.item; });
   }
 
   function itemPorId(id) {
