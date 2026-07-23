@@ -235,6 +235,51 @@
   .anexo-acoes .btn { flex: 1; justify-content: center; }
 }
 
+/* ---------- Modo Party (roleta + placar) ---------- */
+.party-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-6); align-items: start; }
+.roleta-wrap { position: relative; display: flex; justify-content: center; }
+.roleta-ponteiro {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  font-size: 1.75rem; line-height: 1; color: var(--cor-acento); z-index: 2;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .3));
+}
+#roleta {
+  width: 100%; max-width: 320px; display: block; margin: 0 auto;
+  transform-origin: 50% 50%;
+  border-radius: 50%;
+  box-shadow: var(--sombra-flutuante);
+}
+.party-vez {
+  text-align: center; font-weight: var(--peso-medio); font-size: 1.125rem;
+  margin: var(--sp-4) 0; min-height: 1.6em;
+  transition: transform .25s ease, color .25s ease;
+}
+.vez--destaque { transform: scale(1.18); color: var(--cor-primaria); }
+
+.party-placar { display: flex; flex-direction: column; }
+.party-jogador {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 10px 12px; margin-bottom: 8px;
+  border: 1px solid var(--cor-borda); border-radius: 10px; background: var(--cor-superficie);
+}
+.party-jogador__nome { flex: 1 1 auto; font-weight: var(--peso-medio); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.party-jogador__pontos { font-size: 1.25rem; font-weight: var(--peso-forte); color: var(--cor-primaria); min-width: 2ch; text-align: right; }
+.party-jogador__acoes { display: flex; gap: 4px; flex: 0 0 auto; }
+
+/* confete */
+.confete { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1500; }
+.confete i {
+  position: absolute; top: -14px; width: 9px; height: 14px; border-radius: 2px;
+  animation-name: confete-cai; animation-timing-function: linear; animation-fill-mode: forwards;
+}
+@keyframes confete-cai { to { transform: translateY(106vh) rotate(720deg); opacity: .85; } }
+@media (prefers-reduced-motion: reduce) {
+  .confete { display: none; }
+  #roleta { transition: none !important; }
+}
+
+@media (max-width: 1023px) { .party-grid { grid-template-columns: 1fr; } }
+
 /* ---------- Utilidades ---------- */
 .sr-only {
   position: absolute; width: 1px; height: 1px;

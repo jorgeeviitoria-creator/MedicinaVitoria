@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modo Party — Portal de Estudos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/variaveis.css">
+  <link rel="stylesheet" href="assets/css/componentes.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+  <script src="assets/js/tema.js"></script>
+</head>
+<body data-pagina="party">
+  <header class="header">
+    <div class="header__interno">
+      <a class="header__marca" href="index.html"><span class="logo" aria-hidden="true">V</span> Portal da Vitória</a>
+      <nav class="header__nav" aria-label="Navegação principal">
+        <a href="index.html" data-pagina="dashboard">Início</a>
+        <a href="calculadora.html" data-pagina="calculadora">Calculadora</a>
+        <a href="historico.html" data-pagina="historico">Histórico</a>
+        <a href="party.html" data-pagina="party">Party</a>
+        <button id="btn-tema" class="btn-tema" type="button" aria-label="Alternar modo noturno">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 class="pagina-titulo">🎉 Modo Party</h1>
+    <p class="pagina-sub">Gire a roleta pra sortear quem responde a próxima pergunta. Abra o material numa aba ao lado.</p>
+
+    <div class="party-grid">
+      <section class="card" aria-label="Roleta">
+        <div class="roleta-wrap">
+          <div class="roleta-ponteiro" aria-hidden="true">▼</div>
+          <svg id="roleta" viewBox="0 0 200 200" role="img" aria-label="Roleta com os nomes"></svg>
+        </div>
+        <p id="vez" class="party-vez">Adicione os nomes e gire!</p>
+        <button id="btn-girar" class="btn btn--primario" type="button" style="width:100%;justify-content:center;">🎯 Girar a roleta</button>
+      </section>
+
+      <aside class="card" aria-label="Participantes e placar">
+        <h2 class="card__titulo">Quem está estudando</h2>
+        <div class="filtros" style="align-items:flex-end;">
+          <div class="campo" style="flex:1 1 140px;">
+            <label class="campo__label" for="novo-jogador">Nome</label>
+            <input id="novo-jogador" class="input" type="text" placeholder="Ex.: Vitória" autocomplete="off">
+          </div>
+          <button id="btn-add-jogador" class="btn btn--secundario btn--pequeno" type="button">Adicionar</button>
+        </div>
+
+        <h2 class="card__titulo" style="margin-top:16px;">Placar</h2>
+        <div id="placar" class="party-placar"></div>
+        <button id="btn-zerar" class="btn btn--secundario btn--pequeno" type="button" style="margin-top:12px;">Zerar placar</button>
+      </aside>
+    </div>
+  </main>
+
+  <script src="assets/js/componentes-ui.js"></script>
+  <script src="assets/js/party.js"></script>
+</body>
+</html>
