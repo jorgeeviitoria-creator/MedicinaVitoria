@@ -55,11 +55,28 @@
   }
 
   function upload(file, ctx, onProgress) {
-    return apiPost('upload-url', {
-      semestre: ctx.sem, materia: ctx.mat, tipo: ctx.tipo, periodo: '',
-      nome: file.name, contentType: file.type || 'application/octet-stream',
-    }).then(function (r) {
-      return enviarBytes(r.sessionUrl, file, onProgress);
+    // Fluxo iniciado no navegador (CORS do Drive funciona quando o próprio browser
+    // cria a sessão): pega token efêmero -> cria sessão -> PUT dos bytes -> finaliza.
+    return apiPost('upload-token', {}).then(function (r) {
+      var meta = {
+        name: file.name,
+        mimeType: file.type || 'application/octet-stream',
+        parents: r.folderId ? [r.folderId] : undefined,
+        appProperties: { portal: 'medicina-vitoria', semestre: ctx.sem, materia: ctx.mat, periodo: '', tipo: ctx.tipo },
+      };
+      return fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + r.accessToken,
+          'Content-Type': 'application/json; charset=UTF-8',
+          'X-Upload-Content-Type': file.type || 'application/octet-stream',
+        },
+        body: JSON.stringify(meta),
+      }).then(function (init) {
+        var sessionUrl = init.headers.get('location') || init.headers.get('Location');
+        if (!sessionUrl) throw new Error('Google não devolveu a URL de upload.');
+        return enviarBytes(sessionUrl, file, onProgress);
+      });
     }).then(function (put) {
       if (!put || !put.id) throw new Error('Drive não devolveu o id do arquivo.');
       return apiPost('finalize', { fileId: put.id });

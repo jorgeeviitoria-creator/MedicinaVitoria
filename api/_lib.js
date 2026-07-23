@@ -15,9 +15,9 @@ function driveClient() {
 function pastaRaiz() { return process.env.GOOGLE_DRIVE_FOLDER_ID || process.env.ID_DA_PASTA_DO_GOOGLE_DRIVE; }
 
 function autorizado(req) {
-  const esperada = process.env.UPLOAD_PASSWORD || process.env.SENHA_DE_UPLOAD || '';
+  const esperada = String(process.env.UPLOAD_PASSWORD || process.env.SENHA_DE_UPLOAD || '').trim();
   if (!esperada) return false;
-  const enviada = String(req.headers['x-portal-senha'] || '');
+  const enviada = String(req.headers['x-portal-senha'] || '').trim();
   const a = Buffer.from(enviada);
   const b = Buffer.from(esperada);
   if (a.length !== b.length) return false;
