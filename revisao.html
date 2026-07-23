@@ -34,7 +34,18 @@
 
   <main class="container">
     <h1 class="pagina-titulo">🧠 Revisão</h1>
-    <p class="pagina-sub">Flashcards com repetição espaçada: cada card volta na hora certa pra fixar de vez.</p>
+    <p class="pagina-sub">Flashcards com repetição espaçada (perguntas dos painéis + os seus). Cada card volta na hora certa.</p>
+
+    <div class="filtros">
+      <div class="campo">
+        <label class="campo__label" for="rev-f-semestre">Semestre</label>
+        <select id="rev-f-semestre" class="select"></select>
+      </div>
+      <div class="campo">
+        <label class="campo__label" for="rev-f-materia">Matéria</label>
+        <select id="rev-f-materia" class="select"></select>
+      </div>
+    </div>
 
     <!-- área de estudo -->
     <section id="estudo" class="card" hidden aria-label="Sessão de estudo">
@@ -87,6 +98,7 @@
   </main>
 
   <script src="data/conteudo.js"></script>
+  <script src="data/cards.js"></script>
   <script src="assets/js/componentes-ui.js"></script>
   <script src="assets/js/manifesto.js"></script>
   <script src="assets/js/revisao.js"></script>

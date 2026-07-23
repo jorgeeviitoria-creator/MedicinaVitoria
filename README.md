@@ -90,6 +90,16 @@ O título de arquivos que não são HTML vem do **nome do arquivo** (ex.: `prova
    ```
 4. Recarregue o site — o item já aparece na matéria. O título vem do `<title>` do HTML.
 
+### Atualizar os flashcards de Revisão
+
+A página **Revisão** puxa perguntas dos painéis (arrays `flashcards` e `quizData`/`{q,opts,ans}`).
+Depois de adicionar/editar painéis, rode:
+```bash
+node scripts/extrair-cards.js
+```
+Gera `data/cards.json` e `data/cards.js`. O progresso da revisão é guardado por id estável
+(hash da pergunta), então regenerar **não apaga** o que já foi estudado.
+
 ## Cadastrar matéria nova
 
 1. Adicione a matéria em `data/config-materias.json`, dentro do semestre, com `label`,

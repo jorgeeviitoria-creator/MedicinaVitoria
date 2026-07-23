@@ -4,7 +4,7 @@
    - navegação (páginas): rede primeiro, cache só como reserva offline.
    - estáticos: responde do cache e atualiza em segundo plano.
    Troque VERSAO para invalidar tudo. */
-const VERSAO = 'v2';
+const VERSAO = 'v3';
 const CACHE = 'portal-vitoria-' + VERSAO;
 
 const ESSENCIAIS = [
@@ -15,7 +15,7 @@ const ESSENCIAIS = [
   './assets/js/manifesto.js', './assets/js/notas.js', './assets/js/calculadora.js',
   './assets/js/app.js', './assets/js/anexos.js', './assets/js/party.js', './assets/js/agenda.js',
   './assets/js/revisao.js', './assets/js/revisao-ui.js',
-  './data/conteudo.js', './manifest.webmanifest', './icone-192.png', './icone-512.png',
+  './data/conteudo.js', './data/cards.js', './manifest.webmanifest', './icone-192.png', './icone-512.png',
 ];
 
 self.addEventListener('install', (e) => {
