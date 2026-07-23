@@ -50,3 +50,50 @@
   --largura-max: 1200px;
   --bp-mobile: 640px;
 }
+
+/* ---------- Modo noturno ----------
+   Aplicado por [data-tema="escuro"] no <html> (o botão da lua) e também
+   como padrão para quem já usa o sistema no escuro, salvo escolha explícita. */
+:root[data-tema="escuro"] {
+  --cor-primaria: #A78BFA;
+  --cor-primaria-hover: #C4B5FD;
+  --cor-primaria-clara: #2E2545;
+  --cor-acento: #E879F9;
+
+  --cor-sucesso: #2DD4BF;
+  --cor-alerta: #FBBF24;
+  --cor-erro: #F87171;
+
+  --cor-fundo: #141021;
+  --cor-superficie: #1E1830;
+  --cor-texto: #EDE9FE;
+  --cor-texto-secundario: #A99FC4;
+  --cor-borda: #322A4A;
+
+  --sombra-card: 0 1px 3px rgba(0, 0, 0, .45);
+  --sombra-flutuante: 0 8px 24px rgba(0, 0, 0, .55);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    --cor-primaria: #A78BFA;
+    --cor-primaria-hover: #C4B5FD;
+    --cor-primaria-clara: #2E2545;
+    --cor-acento: #E879F9;
+
+    --cor-sucesso: #2DD4BF;
+    --cor-alerta: #FBBF24;
+    --cor-erro: #F87171;
+
+    --cor-fundo: #141021;
+    --cor-superficie: #1E1830;
+    --cor-texto: #EDE9FE;
+    --cor-texto-secundario: #A99FC4;
+    --cor-borda: #322A4A;
+
+    --sombra-card: 0 1px 3px rgba(0, 0, 0, .45);
+    --sombra-flutuante: 0 8px 24px rgba(0, 0, 0, .55);
+    color-scheme: dark;
+  }
+}

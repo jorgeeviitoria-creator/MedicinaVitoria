@@ -185,6 +185,35 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+/* ---------- Ajustes de modo noturno (cores fixas dos badges/estados) ---------- */
+:root[data-tema="escuro"] .badge--sucesso { background: #123f3a; color: #5EEAD4; }
+:root[data-tema="escuro"] .badge--alerta  { background: #422c07; color: #FCD34D; }
+:root[data-tema="escuro"] .badge--erro    { background: #451a1a; color: #FCA5A5; }
+:root[data-tema="escuro"] .badge--acento  { background: #3b1440; color: #F0ABFC; }
+:root[data-tema="escuro"] .btn--perigo:hover { background: #451a1a; }
+:root[data-tema="escuro"] .modal-fundo { background: rgba(0, 0, 0, .65); }
+:root[data-tema="escuro"] .anexo-modal { background: rgba(0, 0, 0, .75); }
+:root[data-tema="escuro"] .toast { background: #2E2545; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) .badge--sucesso { background: #123f3a; color: #5EEAD4; }
+  :root:not([data-tema="claro"]) .badge--alerta  { background: #422c07; color: #FCD34D; }
+  :root:not([data-tema="claro"]) .badge--erro    { background: #451a1a; color: #FCA5A5; }
+  :root:not([data-tema="claro"]) .badge--acento  { background: #3b1440; color: #F0ABFC; }
+  :root:not([data-tema="claro"]) .btn--perigo:hover { background: #451a1a; }
+  :root:not([data-tema="claro"]) .modal-fundo { background: rgba(0, 0, 0, .65); }
+  :root:not([data-tema="claro"]) .anexo-modal { background: rgba(0, 0, 0, .75); }
+  :root:not([data-tema="claro"]) .toast { background: #2E2545; }
+}
+
+/* botão de tema no header */
+.btn-tema {
+  background: none; border: 1px solid var(--cor-borda); border-radius: var(--raio-botao);
+  cursor: pointer; font-size: 1rem; line-height: 1; padding: 9px 11px; min-height: 40px;
+  color: var(--cor-texto); -webkit-tap-highlight-color: transparent;
+}
+.btn-tema:hover { background: var(--cor-primaria-clara); }
+.btn-tema:active { transform: scale(.95); }
+
 /* ---------- Anexos (Anotações / Trabalhos) ---------- */
 .anexo-toolbar { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-4); flex-wrap: wrap; }
 .anexo-progress { flex: 1 1 160px; height: 8px; background: var(--cor-primaria-clara); border-radius: var(--raio-badge); overflow: hidden; min-width: 120px; }
