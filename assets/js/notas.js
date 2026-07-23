@@ -4,7 +4,8 @@
   'use strict';
 
   var CHAVE = 'notas-vitoria';
-  var VERSAO = 1;
+  var CHAVE_CFG = 'config-materias-vitoria';
+  var VERSAO = 2;
 
   function agora() { return new Date().toISOString(); }
 
@@ -48,7 +49,22 @@
     if (v < 1) {
       dados = { versao: 1, semestres: dados.semestres || {} };
     }
-    // futuras migrações: if (dados.versao < 2) { ... dados.versao = 2; }
+    // v1 -> v2: notas deixam de ser 0–10 (com peso) e passam a ser PONTOS.
+    // Converte proporcionalmente as antigas P1/P2/P3 (P1,P2 valem 20; P3 vale 40).
+    if ((dados.versao || 1) < 2) {
+      var escala = { P1: 2, P2: 2, P3: 4 };
+      Object.keys(dados.semestres || {}).forEach(function (sem) {
+        var mats = dados.semestres[sem] || {};
+        Object.keys(mats).forEach(function (mat) {
+          var av = (mats[mat] && mats[mat].avaliacoes) || {};
+          Object.keys(av).forEach(function (k) {
+            if (escala[k] && av[k] && typeof av[k].nota === 'number' && av[k].nota <= 10) {
+              av[k].nota = Math.round(av[k].nota * escala[k] * 10) / 10;
+            }
+          });
+        });
+      });
+    }
     dados.versao = VERSAO;
     if (!dados.semestres) dados.semestres = {};
     return dados;
@@ -229,8 +245,31 @@
     });
   }
 
+  /* ---------- Configuração por matéria (temPratica / minimaPontos) ----------
+     Fica no navegador e sobrepõe o padrão de data/config-materias.json,
+     pra dar pra ajustar sem editar o JSON. */
+  function lerOverrides() {
+    try { return JSON.parse(global.localStorage.getItem(CHAVE_CFG) || '{}'); } catch (_) { return {}; }
+  }
+  function obterOverride(sem, mat) {
+    var o = lerOverrides();
+    return (o[sem] && o[sem][mat]) || {};
+  }
+  function salvarOverride(sem, mat, obj) {
+    var o = lerOverrides();
+    if (!o[sem]) o[sem] = {};
+    var atual = o[sem][mat] || {};
+    Object.keys(obj).forEach(function (k) { atual[k] = obj[k]; });
+    o[sem][mat] = atual;
+    try { global.localStorage.setItem(CHAVE_CFG, JSON.stringify(o)); }
+    catch (e) { throw new Error('Não foi possível salvar a configuração da matéria.'); }
+    return atual;
+  }
+
   global.Notas = {
     CHAVE: CHAVE, VERSAO: VERSAO,
+    obterOverride: obterOverride,
+    salvarOverride: salvarOverride,
     obterNotas: obterNotas,
     notasComoMapa: notasComoMapa,
     salvarNota: salvarNota,

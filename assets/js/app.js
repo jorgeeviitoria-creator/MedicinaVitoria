@@ -19,7 +19,6 @@
     if (isNaN(d)) return iso;
     return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   }
-  function fmtNota(n) { return (Math.round(n * 100) / 100).toFixed(1).replace('.', ','); }
 
   function semestreAtual() {
     var salvo;
@@ -30,23 +29,37 @@
   }
   function setSemestreAtual(slug) { try { global.localStorage.setItem(CHAVE_SEM, slug); } catch (e) {} }
 
-  /** status/média de uma matéria a partir de notas + config. */
+  function fmtPts(n) {
+    if (n == null) return '';
+    var r = Math.round(n * 10) / 10;
+    return (r % 1 === 0 ? String(r) : r.toFixed(1)).replace('.', ',');
+  }
+
+  /** rótulo legível de cada item de nota (P1, P1 prática, Bitácoras, …). */
+  var LABEL_COMP = (function () {
+    var m = {};
+    Calc.componentes(true).concat(Calc.componentes(false)).forEach(function (c) { m[c.id] = c.label; });
+    return m;
+  })();
+  function labelComp(id) { return LABEL_COMP[id] || id; }
+
+  /** config efetiva da matéria: padrão do JSON + ajustes salvos no navegador. */
+  function configEfetiva(sem, mat) {
+    var base = Manifesto.configDaMateria(sem, mat) || {};
+    var over = Notas.obterOverride(sem, mat) || {};
+    var temPratica = (over.temPratica != null) ? !!over.temPratica : !!base.temPratica;
+    var comps = Calc.componentes(temPratica);
+    var minima = (over.minimaPontos != null) ? Number(over.minimaPontos)
+      : (base.minimaPontos != null ? Number(base.minimaPontos) : Calc.minimaPadrao(comps));
+    return { temPratica: temPratica, minimaPontos: minima, comps: comps };
+  }
+
+  /** situação (pontos) de uma matéria a partir das notas + config. */
   function statusMateria(sem, mat) {
-    var cfg = Manifesto.configDaMateria(sem, mat) || { pesos: { P1: 30, P2: 30, P3: 40 }, mediaMinima: 6 };
+    var cfg = configEfetiva(sem, mat);
     var mapa = Notas.notasComoMapa(sem, mat);
-    var qtd = Object.keys(mapa).length;
-    if (qtd === 0) return { status: 'neutro', texto: 'Sem notas ainda', media: null, cfg: cfg };
-    var necess = Calc.calcularNecessario(mapa, cfg.pesos, cfg.mediaMinima);
-    if (necess.pendentes.length === 0) {
-      var media = Calc.calcularMedia(mapa, cfg.pesos);
-      if (media >= cfg.mediaMinima - 1e-9) return { status: 'sucesso', texto: 'Aprovado', media: media, cfg: cfg };
-      return { status: 'erro', texto: 'Reprovado', media: media, cfg: cfg };
-    }
-    // parcial
-    var mediaParcial = Calc.calcularMedia(mapa, cfg.pesos);
-    if (necess.jaGarantido) return { status: 'sucesso', texto: 'Aprovando', media: mediaParcial, cfg: cfg };
-    if (!necess.atingivel) return { status: 'erro', texto: 'Reprovado', media: mediaParcial, cfg: cfg };
-    return { status: 'alerta', texto: 'Em risco', media: mediaParcial, cfg: cfg };
+    var s = Calc.calcularSituacao(mapa, cfg.comps, cfg.minimaPontos);
+    return { status: s.status, texto: s.texto, sit: s, cfg: cfg };
   }
 
   /* ---------- Header: busca global + nav ativa ---------- */
@@ -127,7 +140,7 @@
         var cont = Manifesto.contagemPorTipo(sem, m.slug);
         var partes = Object.keys(cont.porTipo).map(function (tp) { return cont.porTipo[tp] + ' ' + tp + (cont.porTipo[tp] > 1 ? 's' : ''); });
         var contagemTexto = cont.total ? partes.join(' · ') : 'Sem materiais ainda';
-        var badgeTexto = st.texto + (st.media != null ? ' · ' + fmtNota(st.media) : '');
+        var badgeTexto = st.texto + (st.sit.lancados.length ? ' · ' + fmtPts(st.sit.ganhos) + '/' + st.sit.total : '');
         grid.appendChild(UI.renderCard({
           semestre: sem, slug: m.slug, label: m.label,
           badgeStatus: st.status, badgeTexto: badgeTexto,
@@ -180,7 +193,7 @@
     sub.append(
       UI.el('span', { class: 'badge badge--' + st.status }, [
         UI.el('span', { class: 'badge__icone', 'aria-hidden': 'true', text: b.icone }),
-        st.texto + (st.media != null ? ' · média ' + fmtNota(st.media) : ''),
+        st.texto + (st.sit.lancados.length ? ' · ' + fmtPts(st.sit.ganhos) + '/' + st.sit.total + ' pts' : ''),
       ]),
       UI.el('a', { class: 'btn btn--secundario btn--pequeno', style: 'margin-left:12px;',
         href: 'calculadora.html?semestre=' + encodeURIComponent(sem) + '&materia=' + encodeURIComponent(mat) }, ['Abrir calculadora'])
@@ -246,7 +259,6 @@
   function initCalculadora() {
     var p = qs();
     var selSem = $('#calc-semestre'), selMat = $('#calc-materia');
-    var periodos = ['P1', 'P2', 'P3'];
 
     function preencherMaterias(sem) {
       var mats = Manifesto.listarMaterias(sem);
@@ -263,104 +275,123 @@
 
     selMat.addEventListener('change', carregarMateria);
 
-    function inputsNota() { return periodos.map(function (per) { return $('#nota-' + per); }); }
-    function inputsPeso() { return periodos.map(function (per) { return $('#peso-' + per); }); }
+    var comps = [];
+    var campos = $('#campos-notas');
+    var chkPratica = $('#tem-pratica');
+    var inpMinima = $('#minima-pontos');
+    var totalInfo = $('#total-info');
+
+    function renderCampos(mapa) {
+      campos.innerHTML = '';
+      var ordem = [], grupos = {};
+      comps.forEach(function (c) {
+        if (!grupos[c.grupo]) { grupos[c.grupo] = []; ordem.push(c.grupo); }
+        grupos[c.grupo].push(c);
+      });
+      ordem.forEach(function (g) {
+        var grid = UI.el('div', { class: 'notas-grid' });
+        grupos[g].forEach(function (c) {
+          grid.appendChild(UI.el('div', { class: 'campo' }, [
+            UI.el('label', { class: 'campo__label', for: 'nota-' + c.id, text: c.label + ' (0–' + c.max + ')' }),
+            UI.el('input', { class: 'input', type: 'text', inputmode: 'decimal', id: 'nota-' + c.id, placeholder: '—', 'aria-describedby': 'erro-' + c.id }),
+            UI.el('span', { class: 'campo__erro', id: 'erro-' + c.id, role: 'alert' }),
+          ]));
+        });
+        campos.append(UI.el('div', { class: 'grupo-tipo__titulo', text: g }), grid);
+      });
+      comps.forEach(function (c) {
+        var el = $('#nota-' + c.id);
+        el.value = (mapa[c.id] != null) ? String(mapa[c.id]).replace('.', ',') : '';
+        el.addEventListener('input', validarTudo);
+      });
+    }
 
     function lerNotasInput() {
       var mapa = {};
-      periodos.forEach(function (per) {
-        var v = $('#nota-' + per).value;
-        if (v !== '') { var r = Calc.validarNota(v); if (r.ok) mapa[per] = r.valor; }
+      comps.forEach(function (c) {
+        var v = $('#nota-' + c.id).value;
+        if (v !== '') { var r = Calc.validarNota(v, c.max); if (r.ok) mapa[c.id] = r.valor; }
       });
       return mapa;
-    }
-    function lerPesosInput() {
-      var pesos = {};
-      periodos.forEach(function (per) { pesos[per] = parseFloat($('#peso-' + per).value) || 0; });
-      return pesos;
     }
 
     function carregarMateria() {
       var sem = selSem.value, mat = selMat.value;
       if (!mat) return;
-      var cfg = Manifesto.configDaMateria(sem, mat) || { pesos: { P1: 30, P2: 30, P3: 40 }, mediaMinima: 6 };
-      var mapa = Notas.notasComoMapa(sem, mat);
-      periodos.forEach(function (per) {
-        $('#nota-' + per).value = (mapa[per] != null) ? String(mapa[per]).replace('.', ',') : '';
-        $('#peso-' + per).value = cfg.pesos[per];
-      });
-      $('#media-minima').value = cfg.mediaMinima;
+      var cfg = configEfetiva(sem, mat);
+      comps = cfg.comps;
+      chkPratica.checked = cfg.temPratica;
+      inpMinima.value = cfg.minimaPontos;
+      renderCampos(Notas.notasComoMapa(sem, mat));
       validarTudo();
     }
 
     function validarTudo() {
-      // valida notas inline
-      var notasOk = true;
-      periodos.forEach(function (per) {
-        var campo = $('#nota-' + per), erroEl = $('#erro-nota-' + per), v = campo.value;
+      var ok = true;
+      comps.forEach(function (c) {
+        var campo = $('#nota-' + c.id), erroEl = $('#erro-' + c.id), v = campo.value;
         if (v === '') { campo.classList.remove('input--erro'); erroEl.textContent = ''; return; }
-        var r = Calc.validarNota(v);
-        if (!r.ok) { campo.classList.add('input--erro'); erroEl.textContent = r.erro; notasOk = false; }
+        var r = Calc.validarNota(v, c.max);
+        if (!r.ok) { campo.classList.add('input--erro'); erroEl.textContent = r.erro; ok = false; }
         else { campo.classList.remove('input--erro'); erroEl.textContent = ''; }
       });
-      // valida pesos
-      var pesos = lerPesosInput();
-      var vp = Calc.validarPesos(pesos);
-      var somaEl = $('#pesos-soma');
-      somaEl.textContent = vp.ok ? 'Soma: 100% ✓' : vp.erro;
-      somaEl.className = 'pesos-soma ' + (vp.ok ? 'pesos-soma--ok' : 'pesos-soma--erro');
-
-      atualizarResultado(notasOk, vp.ok, pesos);
-      $('#btn-salvar').disabled = !(notasOk && vp.ok);
-      return notasOk && vp.ok;
+      var total = Calc.totalPossivel(comps);
+      totalInfo.textContent = 'Total possível: ' + total + ' pontos.';
+      totalInfo.className = 'pesos-soma pesos-soma--ok';
+      atualizarResultado(ok);
+      $('#btn-salvar').disabled = !ok;
+      return ok;
     }
 
-    function atualizarResultado(notasOk, pesosOk, pesos) {
+    function atualizarResultado(ok) {
       var box = $('#resultado');
-      if (!notasOk || !pesosOk) { box.innerHTML = '<p class="card__meta">Corrija os campos destacados para ver a média.</p>'; return; }
-      var mapa = lerNotasInput();
-      var mediaMin = parseFloat(String($('#media-minima').value).replace(',', '.')) || 6;
-      var media = Calc.calcularMedia(mapa, pesos);
-      var necess = Calc.calcularNecessario(mapa, pesos, mediaMin);
-      var qtd = Object.keys(mapa).length;
-
-      var status = 'neutro', texto = 'Sem notas';
-      if (qtd > 0) {
-        if (necess.pendentes.length === 0) {
-          status = media >= mediaMin - 1e-9 ? 'sucesso' : 'erro';
-          texto = status === 'sucesso' ? 'Aprovado' : 'Reprovado';
-        } else if (necess.jaGarantido) { status = 'sucesso'; texto = 'Aprovando'; }
-        else if (!necess.atingivel) { status = 'erro'; texto = 'Impossível atingir a mínima'; }
-        else { status = 'alerta'; texto = 'Em risco'; }
-      }
-      var b = UI.renderBadge(status);
+      if (!ok) { box.innerHTML = '<p class="card__meta">Corrija os campos destacados para ver a situação.</p>'; return; }
+      var minima = parseFloat(String(inpMinima.value).replace(',', '.'));
+      if (isNaN(minima)) minima = Calc.minimaPadrao(comps);
+      var s = Calc.calcularSituacao(lerNotasInput(), comps, minima);
+      var b = UI.renderBadge(s.status);
       box.innerHTML = '';
       box.append(
-        UI.el('div', { class: 'resultado__media', text: fmtNota(media) }),
-        UI.el('span', { class: 'badge badge--' + status }, [
-          UI.el('span', { class: 'badge__icone', 'aria-hidden': 'true', text: b.icone }), texto,
-        ])
+        UI.el('div', { class: 'resultado__media', text: fmtPts(s.ganhos) + ' / ' + s.total }),
+        UI.el('span', { class: 'badge badge--' + s.status }, [
+          UI.el('span', { class: 'badge__icone', 'aria-hidden': 'true', text: b.icone }), s.texto,
+        ]),
+        UI.el('p', { class: 'card__meta', style: 'margin-top:8px;',
+          text: Math.round(s.percentual) + '% · precisa de ' + fmtPts(minima) + ' pontos pra aprovar' })
       );
-      if (necess.pendentes.length && necess.notaNecessaria != null && !necess.jaGarantido) {
-        var msg = necess.atingivel
-          ? 'Precisa de ' + fmtNota(necess.notaNecessaria) + ' (média) nas etapas pendentes: ' + necess.pendentes.join(', ') + '.'
-          : 'Nem tirando 10 nas etapas pendentes (' + necess.pendentes.join(', ') + ') dá para atingir ' + fmtNota(mediaMin) + '.';
-        box.append(UI.el('p', { class: 'card__meta', style: 'margin-top:8px;', text: msg }));
-      } else if (necess.pendentes.length && necess.jaGarantido) {
-        box.append(UI.el('p', { class: 'card__meta', style: 'margin-top:8px;', text: 'Média mínima já garantida mesmo com etapas pendentes.' }));
+      if (s.pendentes.length && !s.jaGarantido) {
+        var msg = s.atingivel
+          ? 'Faltam ' + fmtPts(s.faltam) + ' pontos; ainda dá pra somar ' + fmtPts(s.possivelRestante) + ' nos itens não lançados.'
+          : 'Mesmo gabaritando o que falta (' + fmtPts(s.possivelRestante) + '), não dá pra chegar a ' + fmtPts(minima) + '.';
+        box.append(UI.el('p', { class: 'card__meta', style: 'margin-top:4px;', text: msg }));
+      } else if (s.pendentes.length && s.jaGarantido) {
+        box.append(UI.el('p', { class: 'card__meta', style: 'margin-top:4px;', text: 'Aprovação já garantida mesmo com itens pendentes.' }));
       }
     }
 
-    inputsNota().forEach(function (i) { i.addEventListener('input', validarTudo); });
-    inputsPeso().forEach(function (i) { i.addEventListener('input', validarTudo); });
-    $('#media-minima').addEventListener('input', validarTudo);
+    chkPratica.addEventListener('change', function () {
+      var novos = Calc.componentes(chkPratica.checked);
+      try {
+        Notas.salvarOverride(selSem.value, selMat.value, {
+          temPratica: chkPratica.checked, minimaPontos: Calc.minimaPadrao(novos),
+        });
+        UI.renderToast(chkPratica.checked ? 'Matéria com prática (total 110).' : 'Matéria sem prática (total 100).', 'sucesso');
+      } catch (e) { UI.renderToast(e.message, 'erro', 6000); }
+      carregarMateria();
+    });
+
+    inpMinima.addEventListener('input', function () {
+      var v = parseFloat(String(inpMinima.value).replace(',', '.'));
+      if (!isNaN(v)) { try { Notas.salvarOverride(selSem.value, selMat.value, { minimaPontos: v }); } catch (e) {} }
+      validarTudo();
+    });
 
     $('#btn-salvar').addEventListener('click', function () {
       if (!validarTudo()) return;
       var sem = selSem.value, mat = selMat.value;
       var mapa = lerNotasInput();
       try {
-        periodos.forEach(function (per) { if (mapa[per] != null) Notas.salvarNota(sem, mat, per, mapa[per]); });
+        comps.forEach(function (c) { if (mapa[c.id] != null) Notas.salvarNota(sem, mat, c.id, mapa[c.id]); });
         UI.renderToast('Lançamento salvo com sucesso.', 'sucesso');
       } catch (e) {
         UI.renderToast(e.message || 'Erro ao salvar.', 'erro', 6000);
@@ -378,6 +409,14 @@
     function preencherFiltros() {
       selSem.innerHTML = '<option value="">Todos os semestres</option>';
       Manifesto.listarSemestres().forEach(function (s) { selSem.appendChild(UI.el('option', { value: s.slug }, [s.label])); });
+      // itens de nota (P1, P1 prática, Bitácoras, …) — cobre com e sem prática
+      selPer.innerHTML = '<option value="">Todos os itens</option>';
+      var vistos = {};
+      Calc.componentes(true).concat(Calc.componentes(false)).forEach(function (c) {
+        if (vistos[c.id]) return;
+        vistos[c.id] = true;
+        selPer.appendChild(UI.el('option', { value: c.id }, [c.label]));
+      });
       atualizarMaterias();
     }
     function atualizarMaterias() {
@@ -394,6 +433,13 @@
       return { semestre: selSem.value || null, materia: selMat.value || null, periodo: selPer.value || null };
     }
 
+    /** pontuação máxima do item, conforme a config da matéria. */
+    function maxDe(l) {
+      var comps = configEfetiva(l.semestre, l.materia).comps;
+      for (var i = 0; i < comps.length; i++) if (comps[i].id === l.periodo) return comps[i].max;
+      return null;
+    }
+
     function render() {
       var linhas = Notas.listarAvaliacoes(filtros());
       corpo.innerHTML = '';
@@ -402,7 +448,7 @@
           'Lance notas na <a href="calculadora.html">calculadora</a> para vê-las aqui.'));
         return;
       }
-      var colunas = ['Semestre', 'Matéria', 'Período', 'Nota', 'Lançamento', 'Última edição', 'Ações'];
+      var colunas = ['Semestre', 'Matéria', 'Item', 'Pontos', 'Lançamento', 'Última edição', 'Ações'];
       var rows = linhas.map(function (l) {
         var acoes = UI.el('div', { style: 'display:flex;gap:6px;' }, [
           UI.el('button', { class: 'btn btn--secundario btn--pequeno', onclick: function () { editar(l); } }, ['Editar']),
@@ -411,8 +457,8 @@
         return [
           Manifesto.labelSemestre(l.semestre),
           Manifesto.labelMateria(l.semestre, l.materia),
-          l.periodo,
-          fmtNota(l.nota),
+          labelComp(l.periodo),
+          fmtPts(l.nota) + (maxDe(l) ? ' / ' + maxDe(l) : ''),
           fmtData(l.dataLancamento),
           l.dataEdicao ? fmtData(l.dataEdicao) : '—',
           acoes,
@@ -422,14 +468,15 @@
     }
 
     function editar(l) {
+      var max = maxDe(l) || 100;
       var atualTxt = String(l.nota).replace('.', ',');
-      var novo = global.prompt('Nova nota para ' + Manifesto.labelMateria(l.semestre, l.materia) + ' ' + l.periodo + ' (0 a 10):', atualTxt);
+      var novo = global.prompt('Novos pontos — ' + Manifesto.labelMateria(l.semestre, l.materia) + ' · ' + labelComp(l.periodo) + ' (0 a ' + max + '):', atualTxt);
       if (novo == null) return;
-      var r = Calc.validarNota(novo);
+      var r = Calc.validarNota(novo, max);
       if (!r.ok) { UI.renderToast(r.erro, 'erro'); return; }
       UI.renderModal({
         titulo: 'Confirmar edição',
-        texto: 'Alterar ' + l.periodo + ' de ' + fmtNota(l.nota) + ' para ' + fmtNota(r.valor) + '? Isso gera uma nova entrada no histórico.',
+        texto: 'Alterar ' + labelComp(l.periodo) + ' de ' + fmtPts(l.nota) + ' para ' + fmtPts(r.valor) + ' pontos? Isso gera uma nova entrada no histórico.',
         confirmar: 'Salvar',
       }).then(function (ok) {
         if (!ok) return;
@@ -441,7 +488,7 @@
     function excluir(l) {
       UI.renderModal({
         titulo: 'Excluir lançamento',
-        texto: 'Excluir a nota ' + fmtNota(l.nota) + ' de ' + Manifesto.labelMateria(l.semestre, l.materia) + ' ' + l.periodo + '? A ação fica registrada no histórico.',
+        texto: 'Excluir ' + fmtPts(l.nota) + ' pontos de ' + Manifesto.labelMateria(l.semestre, l.materia) + ' · ' + labelComp(l.periodo) + '? A ação fica registrada no histórico.',
         confirmar: 'Excluir', perigo: true,
       }).then(function (ok) {
         if (!ok) return;

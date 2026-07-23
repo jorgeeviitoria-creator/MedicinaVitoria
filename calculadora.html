@@ -30,7 +30,7 @@
 
   <main class="container">
     <h1 class="pagina-titulo">Calculadora de notas</h1>
-    <p class="pagina-sub">Escolha a matéria, lance as notas e veja a média ao vivo.</p>
+    <p class="pagina-sub">Lance os pontos de cada item e veja a situação ao vivo.</p>
 
     <div class="filtros">
       <div class="campo">
@@ -45,47 +45,21 @@
 
     <div class="calc-grid">
       <section class="card" aria-label="Lançamento de notas">
-        <h2 class="card__titulo">Notas por etapa</h2>
-        <div class="notas-grid">
-          <div class="campo">
-            <label class="campo__label" for="nota-P1">P1 (0–10)</label>
-            <input id="nota-P1" class="input" type="text" inputmode="decimal" placeholder="—" aria-describedby="erro-nota-P1">
-            <span id="erro-nota-P1" class="campo__erro" role="alert"></span>
-          </div>
-          <div class="campo">
-            <label class="campo__label" for="nota-P2">P2 (0–10)</label>
-            <input id="nota-P2" class="input" type="text" inputmode="decimal" placeholder="—" aria-describedby="erro-nota-P2">
-            <span id="erro-nota-P2" class="campo__erro" role="alert"></span>
-          </div>
-          <div class="campo">
-            <label class="campo__label" for="nota-P3">P3 (0–10)</label>
-            <input id="nota-P3" class="input" type="text" inputmode="decimal" placeholder="—" aria-describedby="erro-nota-P3">
-            <span id="erro-nota-P3" class="campo__erro" role="alert"></span>
-          </div>
-        </div>
+        <h2 class="card__titulo">Pontos por item</h2>
+        <div id="campos-notas"></div>
 
         <details class="config-pesos">
-          <summary>Configurar pesos e média mínima</summary>
-          <p class="campo__ajuda">Os pesos devem somar 100%. Ajuste conforme o critério do professor.</p>
-          <div class="notas-grid">
-            <div class="campo">
-              <label class="campo__label" for="peso-P1">Peso P1 (%)</label>
-              <input id="peso-P1" class="input" type="number" min="0" max="100" step="1">
-            </div>
-            <div class="campo">
-              <label class="campo__label" for="peso-P2">Peso P2 (%)</label>
-              <input id="peso-P2" class="input" type="number" min="0" max="100" step="1">
-            </div>
-            <div class="campo">
-              <label class="campo__label" for="peso-P3">Peso P3 (%)</label>
-              <input id="peso-P3" class="input" type="number" min="0" max="100" step="1">
-            </div>
+          <summary>Configurar esta matéria</summary>
+          <label class="check-linha">
+            <input type="checkbox" id="tem-pratica">
+            <span>Esta matéria <strong>tem prática</strong> (muda os itens e o total para 110)</span>
+          </label>
+          <div class="campo" style="max-width:220px;margin-top:12px;">
+            <label class="campo__label" for="minima-pontos">Pontos para aprovar</label>
+            <input id="minima-pontos" class="input" type="number" min="0" step="0.5">
+            <span class="campo__ajuda">Padrão: 60% do total.</span>
           </div>
-          <div class="campo" style="max-width:200px;">
-            <label class="campo__label" for="media-minima">Média mínima</label>
-            <input id="media-minima" class="input" type="number" min="0" max="10" step="0.1" value="6">
-          </div>
-          <p id="pesos-soma" class="pesos-soma">Soma: 100%</p>
+          <p id="total-info" class="pesos-soma"></p>
         </details>
 
         <button id="btn-salvar" class="btn btn--primario" type="button" style="margin-top:12px;">Salvar lançamento</button>

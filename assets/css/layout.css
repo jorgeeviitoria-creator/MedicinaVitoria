@@ -163,6 +163,10 @@ a { color: var(--cor-primaria); }
 .resultado__media { font-size: 2.5rem; font-weight: var(--peso-forte); line-height: 1; }
 .notas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); }
 .config-pesos summary { cursor: pointer; font-weight: var(--peso-medio); padding: var(--sp-2) 0; }
+.check-linha { display: flex; align-items: flex-start; gap: var(--sp-2); cursor: pointer; padding: var(--sp-2) 0; }
+.check-linha input { width: 18px; height: 18px; margin-top: 2px; flex: 0 0 auto; accent-color: var(--cor-primaria); }
+#campos-notas .grupo-tipo__titulo { margin-top: var(--sp-4); }
+#campos-notas .notas-grid { margin-bottom: var(--sp-2); }
 .pesos-soma { font-size: var(--fs-legenda); font-weight: var(--peso-medio); }
 .pesos-soma--ok { color: var(--cor-sucesso); }
 .pesos-soma--erro { color: var(--cor-erro); }
