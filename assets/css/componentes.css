@@ -235,6 +235,46 @@
   .anexo-acoes .btn { flex: 1; justify-content: center; }
 }
 
+/* ---------- Simulado (múltipla escolha) ---------- */
+.sim-pergunta { font-size: 1.15rem; font-weight: var(--peso-medio); line-height: 1.5; margin: 8px 0 16px; }
+.sim-opcoes { display: flex; flex-direction: column; gap: 8px; }
+.sim-opcao {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 12px 14px; border: 1px solid var(--cor-borda); border-radius: 10px;
+  background: var(--cor-superficie); color: var(--cor-texto);
+  font: inherit; cursor: pointer; transition: background-color .12s ease, border-color .12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.sim-opcao:hover:not(:disabled) { background: var(--cor-primaria-clara); border-color: var(--cor-primaria); }
+.sim-opcao:disabled { cursor: default; }
+.sim-opcao__letra {
+  flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: var(--peso-forte); font-size: .85rem;
+  background: var(--cor-primaria-clara); color: var(--cor-primaria-hover);
+}
+.sim-opcao--correta { border-color: var(--cor-sucesso); background: #ccfbf1; }
+.sim-opcao--correta .sim-opcao__letra { background: var(--cor-sucesso); color: #fff; }
+.sim-opcao--errada { border-color: var(--cor-erro); background: #fee2e2; }
+.sim-opcao--errada .sim-opcao__letra { background: var(--cor-erro); color: #fff; }
+:root[data-tema="escuro"] .sim-opcao--correta { background: #123f3a; }
+:root[data-tema="escuro"] .sim-opcao--errada { background: #451a1a; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) .sim-opcao--correta { background: #123f3a; }
+  :root:not([data-tema="claro"]) .sim-opcao--errada { background: #451a1a; }
+}
+.sim-explicacao { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: var(--fs-legenda); line-height: 1.5; }
+.sim-explicacao--ok { background: #ccfbf1; color: #0f766e; }
+.sim-explicacao--erro { background: #fef3c7; color: #b45309; }
+:root[data-tema="escuro"] .sim-explicacao--ok { background: #123f3a; color: #5EEAD4; }
+:root[data-tema="escuro"] .sim-explicacao--erro { background: #422c07; color: #FCD34D; }
+
+.sim-erro-item {
+  display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; margin-bottom: 8px;
+  border: 1px solid var(--cor-borda); border-left: 3px solid var(--cor-erro); border-radius: 8px; background: var(--cor-superficie);
+}
+.sim-erro-item__sua { font-size: var(--fs-legenda); color: var(--cor-erro); }
+.sim-erro-item__certa { font-size: var(--fs-legenda); color: var(--cor-sucesso); font-weight: var(--peso-medio); }
+
 /* ---------- Revisão (flashcards SM-2) ---------- */
 .flashcard {
   position: relative; width: 100%; min-height: 220px; cursor: pointer;

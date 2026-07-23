@@ -63,33 +63,51 @@ function limparTexto(s) {
 
 function extrairDoArquivo(arquivo, semestre, materia) {
   var txt = fs.readFileSync(arquivo, 'utf8');
-  var cards = [];
-  var vistos = {};
+  var cards = [], quiz = [];
+  var vistosC = {}, vistosQ = {};
 
   objetosDe(txt).forEach(function (o) {
+    var ehQuiz = o.q != null && Array.isArray(o.opts) && typeof o.ans === 'number' && o.opts[o.ans] != null && o.opts.length >= 2;
+
+    // ---- flashcard (Revisão) ----
     var frente = null, verso = null;
     if ((o.front != null) && (o.back != null)) {
       frente = limparTexto(o.front); verso = limparTexto(o.back);
-    } else if (o.q != null && Array.isArray(o.opts) && typeof o.ans === 'number' && o.opts[o.ans] != null) {
+    } else if (ehQuiz) {
       frente = limparTexto(o.q);
       verso = limparTexto(o.opts[o.ans]) + (o.exp ? ' — ' + limparTexto(o.exp) : '');
     }
-    if (!frente || !verso || frente.length < 4) return;
-    var chave = frente.toLowerCase();
-    if (vistos[chave]) return;
-    vistos[chave] = true;
-    cards.push({
-      id: 'p_' + hash(semestre + '|' + materia + '|' + frente),
-      semestre: semestre, materia: materia,
-      frente: frente, verso: verso, origem: 'painel',
-    });
+    if (frente && verso && frente.length >= 4) {
+      var ck = frente.toLowerCase();
+      if (!vistosC[ck]) {
+        vistosC[ck] = true;
+        cards.push({ id: 'p_' + hash(semestre + '|' + materia + '|' + frente), semestre: semestre, materia: materia, frente: frente, verso: verso, origem: 'painel' });
+      }
+    }
+
+    // ---- questão de simulado (múltipla escolha, guarda as opções) ----
+    if (ehQuiz) {
+      var perg = limparTexto(o.q);
+      var qk = perg.toLowerCase();
+      if (perg.length >= 4 && !vistosQ[qk]) {
+        vistosQ[qk] = true;
+        quiz.push({
+          id: 'q_' + hash(semestre + '|' + materia + '|' + perg),
+          semestre: semestre, materia: materia,
+          pergunta: perg,
+          opcoes: o.opts.map(limparTexto),
+          correta: o.ans,
+          explicacao: o.exp ? limparTexto(o.exp) : '',
+        });
+      }
+    }
   });
-  return cards;
+  return { cards: cards, quiz: quiz };
 }
 
 function main() {
-  var porMateria = {};
-  var totais = 0;
+  var cardsPorMateria = {}, quizPorMateria = {};
+  var totC = 0, totQ = 0;
 
   function scanDir(dir, semestre, materia, periodo) {
     fs.readdirSync(dir, { withFileTypes: true }).forEach(function (e) {
@@ -101,28 +119,29 @@ function main() {
         else if (e.name.toLowerCase() === 'paineis') scanDir(p, semestre, materia, periodo + '/paineis');
         else scanDir(p, semestre, materia, periodo);
       } else if (/paineis$/.test(periodo || '') && /\.html?$/i.test(e.name)) {
-        var cards = extrairDoArquivo(p, semestre, materia);
-        if (cards.length) {
-          var k = semestre + '|' + materia;
-          (porMateria[k] = porMateria[k] || []).push.apply(porMateria[k], cards);
-          totais += cards.length;
-          console.log('  ' + cards.length + ' cards <- ' + path.relative(RAIZ, p));
-        }
+        var r = extrairDoArquivo(p, semestre, materia);
+        var k = semestre + '|' + materia;
+        if (r.cards.length) { (cardsPorMateria[k] = cardsPorMateria[k] || []).push.apply(cardsPorMateria[k], r.cards); totC += r.cards.length; }
+        if (r.quiz.length) { (quizPorMateria[k] = quizPorMateria[k] || []).push.apply(quizPorMateria[k], r.quiz); totQ += r.quiz.length; }
+        if (r.cards.length || r.quiz.length) console.log('  ' + r.cards.length + ' cards, ' + r.quiz.length + ' questões <- ' + path.relative(RAIZ, p));
       }
     });
   }
 
-  console.log('Extraindo cards dos painéis...');
+  console.log('Extraindo dos painéis...');
   if (fs.existsSync(DIR_MATERIAS)) scanDir(DIR_MATERIAS, null, null, null);
 
-  var saida = { geradoEm: new Date().toISOString(), materias: {} };
-  Object.keys(porMateria).forEach(function (k) { saida.materias[k] = porMateria[k]; });
+  function escrever(nome, glob, porMateria) {
+    var saida = { geradoEm: new Date().toISOString(), materias: porMateria };
+    fs.writeFileSync(path.join(RAIZ, 'data', nome + '.json'), JSON.stringify(saida, null, 2) + '\n', 'utf8');
+    fs.writeFileSync(path.join(RAIZ, 'data', nome + '.js'),
+      '// Gerado por scripts/extrair-cards.js — não editar à mão.\nwindow.' + glob + ' = ' + JSON.stringify(saida) + ';\n', 'utf8');
+  }
+  escrever('cards', '__CARDS__', cardsPorMateria);
+  escrever('simulado', '__SIMULADO__', quizPorMateria);
 
-  fs.writeFileSync(path.join(RAIZ, 'data', 'cards.json'), JSON.stringify(saida, null, 2) + '\n', 'utf8');
-  fs.writeFileSync(path.join(RAIZ, 'data', 'cards.js'),
-    '// Gerado por scripts/extrair-cards.js — não editar à mão.\nwindow.__CARDS__ = ' + JSON.stringify(saida) + ';\n', 'utf8');
-
-  console.log('[ok] ' + totais + ' cards de ' + Object.keys(porMateria).length + ' matéria(s) -> data/cards.json e data/cards.js');
+  console.log('[ok] ' + totC + ' cards -> data/cards.*');
+  console.log('[ok] ' + totQ + ' questões de simulado -> data/simulado.*');
 }
 
 main();

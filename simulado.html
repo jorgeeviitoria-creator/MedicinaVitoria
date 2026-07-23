@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulado — Portal de Estudos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/variaveis.css">
+  <link rel="stylesheet" href="assets/css/componentes.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#6D28D9">
+  <link rel="apple-touch-icon" href="icone-192.png">
+  <script src="assets/js/pwa.js" defer></script>
+  <script src="assets/js/tema.js"></script>
+</head>
+<body data-pagina="simulado">
+  <header class="header">
+    <div class="header__interno">
+      <a class="header__marca" href="index.html"><span class="logo" aria-hidden="true">V</span> Portal da Vitória</a>
+      <nav class="header__nav" aria-label="Navegação principal">
+        <a href="index.html" data-pagina="dashboard">Início</a>
+        <a href="agenda.html" data-pagina="agenda">Provas</a>
+        <a href="revisao.html" data-pagina="revisao">Revisão</a>
+        <a href="simulado.html" data-pagina="simulado">Simulado</a>
+        <a href="calculadora.html" data-pagina="calculadora">Calculadora</a>
+        <a href="historico.html" data-pagina="historico">Histórico</a>
+        <a href="party.html" data-pagina="party">Party</a>
+        <button id="btn-tema" class="btn-tema" type="button" aria-label="Alternar modo noturno">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 class="pagina-titulo">📝 Simulado</h1>
+    <p class="pagina-sub">Questões de múltipla escolha dos painéis. Responda e veja a nota no fim.</p>
+
+    <!-- configuração -->
+    <section id="sim-config" class="card" aria-label="Montar simulado">
+      <div class="filtros">
+        <div class="campo">
+          <label class="campo__label" for="sim-f-semestre">Semestre</label>
+          <select id="sim-f-semestre" class="select"></select>
+        </div>
+        <div class="campo">
+          <label class="campo__label" for="sim-f-materia">Matéria</label>
+          <select id="sim-f-materia" class="select"></select>
+        </div>
+        <div class="campo">
+          <label class="campo__label" for="sim-qtd">Nº de questões</label>
+          <select id="sim-qtd" class="select">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="30">30</option>
+            <option value="9999">Todas</option>
+          </select>
+        </div>
+      </div>
+      <p id="sim-disponiveis" class="card__meta" style="margin-bottom:12px;"></p>
+      <button id="sim-iniciar" class="btn btn--primario" type="button">Iniciar simulado</button>
+    </section>
+
+    <!-- questão atual -->
+    <section id="sim-jogo" class="card" hidden aria-label="Questão">
+      <div class="barra-topo" style="margin-bottom:8px;">
+        <span id="sim-progresso" class="card__meta"></span>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <span id="sim-placar" class="badge badge--acento"></span>
+          <button id="sim-encerrar" class="btn btn--secundario btn--pequeno" type="button">Encerrar</button>
+        </div>
+      </div>
+      <span id="sim-materia" class="grupo-tipo__titulo"></span>
+      <p id="sim-pergunta" class="sim-pergunta"></p>
+      <div id="sim-opcoes" class="sim-opcoes"></div>
+      <p id="sim-explicacao" class="sim-explicacao" hidden></p>
+      <button id="sim-proxima" class="btn btn--primario" type="button" hidden style="margin-top:12px;">Próxima →</button>
+    </section>
+
+    <!-- resultado -->
+    <section id="sim-resultado" hidden aria-label="Resultado">
+      <div class="card" style="text-align:center;margin-bottom:16px;">
+        <div id="sim-resultado-head" class="resultado" style="align-items:center;"></div>
+        <button id="sim-refazer" class="btn btn--primario" type="button" style="margin-top:16px;">Novo simulado</button>
+      </div>
+      <div id="sim-erradas"></div>
+    </section>
+  </main>
+
+  <script src="data/conteudo.js"></script>
+  <script src="data/simulado.js"></script>
+  <script src="assets/js/componentes-ui.js"></script>
+  <script src="assets/js/manifesto.js"></script>
+  <script src="assets/js/simulado.js"></script>
+</body>
+</html>

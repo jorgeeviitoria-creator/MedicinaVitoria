@@ -4,18 +4,18 @@
    - navegação (páginas): rede primeiro, cache só como reserva offline.
    - estáticos: responde do cache e atualiza em segundo plano.
    Troque VERSAO para invalidar tudo. */
-const VERSAO = 'v3';
+const VERSAO = 'v4';
 const CACHE = 'portal-vitoria-' + VERSAO;
 
 const ESSENCIAIS = [
   './', './index.html', './agenda.html', './calculadora.html', './historico.html',
-  './materia.html', './party.html', './revisao.html', './ver.html',
+  './materia.html', './party.html', './revisao.html', './simulado.html', './ver.html',
   './assets/css/variaveis.css', './assets/css/componentes.css', './assets/css/layout.css',
   './assets/js/tema.js', './assets/js/pwa.js', './assets/js/componentes-ui.js',
   './assets/js/manifesto.js', './assets/js/notas.js', './assets/js/calculadora.js',
   './assets/js/app.js', './assets/js/anexos.js', './assets/js/party.js', './assets/js/agenda.js',
-  './assets/js/revisao.js', './assets/js/revisao-ui.js',
-  './data/conteudo.js', './data/cards.js', './manifest.webmanifest', './icone-192.png', './icone-512.png',
+  './assets/js/revisao.js', './assets/js/revisao-ui.js', './assets/js/simulado.js',
+  './data/conteudo.js', './data/cards.js', './data/simulado.js', './manifest.webmanifest', './icone-192.png', './icone-512.png',
 ];
 
 self.addEventListener('install', (e) => {
